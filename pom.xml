@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>gt.edu.umg.fivercable</groupId>
+    <artifactId>fiver-cable-devops-demo</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>Fiver Cable DevOps Demo</name>
+    <description>Prototipo académico de microservicios para demostrar DevOps 1</description>
+
+    <modules>
+        <module>src/auth-service</module>
+        <module>src/red-service</module>
+        <module>src/soporte-service</module>
+        <module>src/pagos-service</module>
+    </modules>
+
+    <properties>
+        <java.version>17</java.version>
+    </properties>
+</project>
+
