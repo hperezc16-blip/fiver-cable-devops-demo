@@ -1,0 +1,195 @@
+# ============================================================================
+# Fiver Cable - Pipeline CI/CD (Azure Pipelines)
+# Etapas: Checkout -> Build -> Test -> Deploy Staging
+#  - Cada push a develop/main y cada Pull Request ejecuta Build y Test.
+#  - Solo main despliega a Staging.
+#  - Staging: por defecto entorno efímero en el agente (docker compose);
+#    al ejecutar manualmente con "desplegarEnAzure = true" se despliega en
+#    Azure Container Apps + Azure Database for PostgreSQL.
+# ============================================================================
+
+trigger:
+  branches:
+    include: [main, develop]
+
+pr:
+  branches:
+    include: [main, develop]
+
+parameters:
+  - name: desplegarEnAzure
+    displayName: Desplegar Staging en Azure Container Apps
+    type: boolean
+    default: false
+  - name: conexionAzure
+    displayName: Nombre de la service connection de Azure Resource Manager
+    type: string
+    default: fivercable-azure
+
+variables:
+  pythonVersion: '3.11'
+  REPORTS_DIR: reports
+  HEADLESS: '1'
+  JWT_SECRET: ci-fivercable-jwt-secret-solo-para-pruebas-automatizadas
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+# ---------------------------------------------------------------------------
+- stage: Build
+  displayName: Build
+  jobs:
+  - job: build
+    displayName: Lint, pruebas unitarias e imágenes Docker
+    steps:
+    - checkout: self
+      displayName: Checkout del repositorio
+      fetchDepth: 1
+
+    - task: UsePythonVersion@0
+      inputs: { versionSpec: '$(pythonVersion)' }
+      displayName: Python $(pythonVersion)
+
+    - script: pip install -r requirements-dev.txt
+      displayName: Instalar dependencias
+
+    - script: ruff check src tests
+      displayName: Análisis estático (ruff)
+
+    - script: |
+        mkdir -p $(REPORTS_DIR)
+        python -m pytest -m unit --junitxml=$(REPORTS_DIR)/junit-unit.xml
+      displayName: Pruebas unitarias (fallo rápido)
+
+    - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFiles: $(REPORTS_DIR)/junit-unit.xml
+        testRunTitle: Unitarias - Build $(Build.BuildNumber)
+      displayName: Publicar resultados unitarios
+
+    - script: docker compose build
+      displayName: Construir imágenes de los 4 microservicios
+
+# ---------------------------------------------------------------------------
+- stage: Test
+  displayName: Test
+  dependsOn: Build
+  jobs:
+  - job: test
+    displayName: Integración, sistema, aceptación, seguridad y rendimiento
+    steps:
+    - checkout: self
+      fetchDepth: 1
+
+    - task: UsePythonVersion@0
+      inputs: { versionSpec: '$(pythonVersion)' }
+
+    - script: pip install -r requirements-dev.txt
+      displayName: Instalar dependencias de pruebas
+
+    - script: |
+        docker compose up -d --build --wait
+        docker compose ps
+      displayName: Levantar entorno de pruebas (PostgreSQL + 4 microservicios)
+
+    - script: |
+        mkdir -p $(REPORTS_DIR)
+        python -m pytest \
+          --junitxml=$(REPORTS_DIR)/junit.xml \
+          --html=$(REPORTS_DIR)/reporte-pruebas.html --self-contained-html \
+          --cov=src --cov-report=xml:$(REPORTS_DIR)/coverage.xml --cov-report=term
+      displayName: Ejecutar Plan de Pruebas completo (pytest + Selenium)
+
+    - script: docker compose logs --no-color > $(REPORTS_DIR)/logs-servicios.txt
+      condition: always()
+      displayName: Guardar logs de los servicios
+
+    - task: PublishTestResults@2
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFiles: $(REPORTS_DIR)/junit.xml
+        testRunTitle: Plan de Pruebas - Build $(Build.BuildNumber)
+      displayName: Publicar resultados en la pestaña Tests
+
+    - task: PublishCodeCoverageResults@2
+      condition: succeededOrFailed()
+      inputs:
+        summaryFileLocation: $(REPORTS_DIR)/coverage.xml
+      displayName: Publicar cobertura de código
+
+    - task: PublishPipelineArtifact@1
+      condition: always()
+      inputs:
+        targetPath: $(REPORTS_DIR)
+        artifact: reporte-pruebas
+      displayName: Publicar reporte HTML y capturas de Selenium
+
+    - script: docker compose down -v
+      condition: always()
+      displayName: Limpiar entorno
+
+# ---------------------------------------------------------------------------
+- stage: DeployStaging
+  displayName: Deploy Staging
+  dependsOn: Test
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - deployment: staging
+    displayName: Desplegar a Staging
+    environment: fivercable-staging
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+            fetchDepth: 1
+
+          - task: UsePythonVersion@0
+            inputs: { versionSpec: '$(pythonVersion)' }
+
+          - script: pip install -r requirements-dev.txt
+            displayName: Instalar dependencias de smoke tests
+
+          - ${{ if eq(parameters.desplegarEnAzure, true) }}:
+            - task: AzureCLI@2
+              displayName: Desplegar en Azure Container Apps
+              inputs:
+                azureSubscription: ${{ parameters.conexionAzure }}
+                scriptType: bash
+                scriptLocation: scriptPath
+                scriptPath: infra/azure/deploy-staging.sh
+              env:
+                PG_ADMIN_PASSWORD: $(PG_ADMIN_PASSWORD)
+                JWT_SECRET_STAGING: $(JWT_SECRET_STAGING)
+                IMAGE_TAG: $(Build.BuildId)
+
+            - script: |
+                mkdir -p $(REPORTS_DIR)
+                python -m pytest -m system --junitxml=$(REPORTS_DIR)/junit-smoke.xml
+              displayName: Smoke tests contra Staging en Azure
+              env:
+                DATABASE_URL: $(STAGING_DATABASE_URL)
+
+          - ${{ if ne(parameters.desplegarEnAzure, true) }}:
+            - script: |
+                docker compose up -d --build --wait
+                docker compose ps
+                echo "##vso[task.setvariable variable=AUTH_URL]http://localhost:3000"
+                echo "##vso[task.setvariable variable=CATALOGO_URL]http://localhost:3001"
+                echo "##vso[task.setvariable variable=PEDIDOS_URL]http://localhost:3002"
+                echo "##vso[task.setvariable variable=PAGOS_URL]http://localhost:3003"
+              displayName: Desplegar Staging efímero en el agente (docker compose)
+
+            - script: |
+                mkdir -p $(REPORTS_DIR)
+                python -m pytest -m system --junitxml=$(REPORTS_DIR)/junit-smoke.xml
+              displayName: Smoke tests contra Staging
+
+
+          - task: PublishTestResults@2
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFiles: $(REPORTS_DIR)/junit-smoke.xml
+              testRunTitle: Smoke Staging - Build $(Build.BuildNumber)
