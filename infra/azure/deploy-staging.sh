@@ -13,7 +13,7 @@ set -euo pipefail
 : "${PG_ADMIN_PASSWORD:?Definir PG_ADMIN_PASSWORD como variable secreta del pipeline}"
 : "${JWT_SECRET_STAGING:?Definir JWT_SECRET_STAGING como variable secreta del pipeline}"
 
-LOCATION="${AZ_LOCATION:-eastus}"
+LOCATION="${AZ_LOCATION:-}"
 RG="${AZ_RESOURCE_GROUP:-rg-fivercable-staging}"
 SUFIJO="${AZ_SUFIJO:-umg2026}"
 ACR="acrfivercable${SUFIJO}"
@@ -22,6 +22,21 @@ PG_ADMIN="fiveradmin"
 DB_NAME="fivercable_db"
 ACA_ENV="cae-fivercable-staging"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
+
+echo "==> Registro de proveedores de recursos"
+for ns in Microsoft.App Microsoft.OperationalInsights Microsoft.ContainerRegistry Microsoft.DBforPostgreSQL; do
+  az provider register -n "$ns" --wait -o none
+done
+
+# Las suscripciones Azure for Students limitan las regiones permitidas por política.
+if [ -z "$LOCATION" ]; then
+  PERMITIDAS=$(az policy assignment list --query "[].parameters.listOfAllowedLocations.value" -o tsv 2>/dev/null | tr '\t' '\n' | sort -u)
+  for cand in eastus2 centralus southcentralus westus2 eastus westus3 canadacentral brazilsouth mexicocentral; do
+    if [ -z "$PERMITIDAS" ] || echo "$PERMITIDAS" | grep -qx "$cand"; then LOCATION="$cand"; break; fi
+  done
+  [ -z "$LOCATION" ] && LOCATION=$(echo "$PERMITIDAS" | head -1)
+fi
+echo "Región seleccionada: $LOCATION"
 
 echo "==> Grupo de recursos $RG ($LOCATION)"
 az group create -n "$RG" -l "$LOCATION" -o none
@@ -57,13 +72,15 @@ else
   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f db/init/01_schema.sql   # objetos idempotentes
 fi
 
-echo "==> Construir imágenes en ACR (tag $IMAGE_TAG)"
+echo "==> Construir y publicar imágenes en ACR (tag $IMAGE_TAG)"
+az acr login -n "$ACR"
 for svc in auth catalogo pedidos pagos; do
-  az acr build -r "$ACR" -t "fivercable/ms_${svc}:${IMAGE_TAG}" -f "docker/Dockerfile.${svc}" . -o none
+  docker build -t "$ACR_SERVER/fivercable/ms_${svc}:${IMAGE_TAG}" -f "docker/Dockerfile.${svc}" .
+  docker push "$ACR_SERVER/fivercable/ms_${svc}:${IMAGE_TAG}"
 done
 
 echo "==> Entorno de Azure Container Apps $ACA_ENV"
-az extension add --name containerapp --upgrade -y -o none
+az extension add --name containerapp --upgrade -y -o none 2>/dev/null || true
 az containerapp env show -n "$ACA_ENV" -g "$RG" -o none 2>/dev/null || \
   az containerapp env create -n "$ACA_ENV" -g "$RG" -l "$LOCATION" -o none
 
