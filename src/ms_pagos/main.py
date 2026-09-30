@@ -1,5 +1,9 @@
-"""ms_pagos -> esquema billing_db. Facturas FEL, pagos y cierre diario."""
+"""ms_pagos -> esquema billing_db. Facturas FEL, pagos y portal de cobro digital en campo."""
+import os
+from pathlib import Path
+
 from fastapi import Depends, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from src.common.base import crear_app, get_conn, requiere_rol, usuario_actual
@@ -7,6 +11,7 @@ from src.ms_pagos import logic
 
 ESQUEMA = "billing_db"
 app = crear_app("ms_pagos", ESQUEMA)
+PORTAL_HTML = (Path(__file__).parent / "portal.html").read_text(encoding="utf-8")
 
 
 class NuevoPago(BaseModel):
@@ -64,3 +69,8 @@ def cierre_diario(user: dict = Depends(requiere_rol("Tecnico", "Administrador"))
     with get_conn(ESQUEMA) as c:
         return c.execute("SELECT * FROM vw_cierre_diario_pagos ORDER BY fecha DESC, metodo_pago").fetchall()
 
+
+@app.get("/portal", response_class=HTMLResponse, include_in_schema=False)
+def portal():
+    auth_url = os.getenv("AUTH_PUBLIC_URL", "http://localhost:3000")
+    return PORTAL_HTML.replace("__AUTH_URL__", auth_url)

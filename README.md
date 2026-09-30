@@ -13,7 +13,7 @@ Seminario de Tecnologías de Información 2026 - Universidad Mariano Gálvez de 
 | `ms_auth` | 3000 | `usuarios_db` | Registro, login JWT, roles y estado del suscriptor (auditoría por trigger) |
 | `ms_catalogo` | 3001 | `red_db` | Planes de servicio, inventario de ONUs, señal óptica y estado OLT |
 | `ms_pedidos` | 3002 | `soporte_db` | Tickets de soporte con prioridad automática y SLA |
-| `ms_pagos` | 3003 | `billing_db` | Facturas FEL, pagos y cierre diario |
+| `ms_pagos` | 3003 | `billing_db` | Facturas FEL, pagos, cierre diario y **portal de cobro en campo** (`/portal`) |
 
 - Lenguaje: Python 3.11 + FastAPI - SGBD: PostgreSQL 16 (ambos libres).
 - Patrón *database-per-service*: un esquema por microservicio (script en `db/init`).
@@ -38,6 +38,7 @@ Jenkinsfile           pipeline equivalente para Jenkins
 ```bash
 cp .env.example .env
 docker compose up -d --build --wait
+# Portal de cobro:  http://localhost:3003/portal
 # API docs:         http://localhost:3000/docs  (3001, 3002, 3003)
 ```
 
