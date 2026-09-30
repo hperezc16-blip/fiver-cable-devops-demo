@@ -4,8 +4,8 @@
 #  - Cada push a develop/main y cada Pull Request ejecuta Build y Test.
 #  - Solo main despliega a Staging.
 #  - Staging: por defecto entorno efímero en el agente (docker compose);
-#    al ejecutar manualmente con "desplegarEnAzure = true" se despliega en
-#    Azure Container Apps + Azure Database for PostgreSQL.
+#    al ejecutar con "desplegarEnAzure = true" se despliega en Azure Container
+#    Apps + Azure Database for PostgreSQL con la conexión fivercable-azure.
 # ============================================================================
 
 trigger:
@@ -161,8 +161,6 @@ stages:
                 scriptLocation: scriptPath
                 scriptPath: infra/azure/deploy-staging.sh
               env:
-                PG_ADMIN_PASSWORD: $(PG_ADMIN_PASSWORD)
-                JWT_SECRET_STAGING: $(JWT_SECRET_STAGING)
                 IMAGE_TAG: $(Build.BuildId)
 
             - script: |

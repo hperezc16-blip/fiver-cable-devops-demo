@@ -6,12 +6,15 @@
 #   Azure Container Apps      -> ms_auth, ms_catalogo, ms_pedidos, ms_pagos
 # Idempotente: se puede ejecutar en cada despliegue. Lo ejecuta el pipeline
 # (AzureCLI@2) o manualmente con "az login" previo.
-# Variables requeridas: PG_ADMIN_PASSWORD, JWT_SECRET_STAGING
+# Las claves de PostgreSQL y el secreto JWT se generan en cada despliegue y
+# solo viven como secretos del pipeline y de Container Apps.
 # ============================================================================
 set -euo pipefail
 
-: "${PG_ADMIN_PASSWORD:?Definir PG_ADMIN_PASSWORD como variable secreta del pipeline}"
-: "${JWT_SECRET_STAGING:?Definir JWT_SECRET_STAGING como variable secreta del pipeline}"
+PG_ADMIN_PASSWORD="Fc$(openssl rand -hex 12)A9"
+JWT_SECRET_STAGING="$(openssl rand -hex 32)"
+echo "##vso[task.setsecret]$PG_ADMIN_PASSWORD"
+echo "##vso[task.setsecret]$JWT_SECRET_STAGING"
 
 LOCATION="${AZ_LOCATION:-}"
 RG="${AZ_RESOURCE_GROUP:-rg-fivercable-staging}"
@@ -55,6 +58,8 @@ if ! az postgres flexible-server show -n "$PG_SERVER" -g "$RG" -o none 2>/dev/nu
     --tier Burstable --sku-name Standard_B1ms --storage-size 32 --version 16 \
     --public-access 0.0.0.0 --yes -o none
   az postgres flexible-server db create -g "$RG" -s "$PG_SERVER" -d "$DB_NAME" -o none
+else
+  az postgres flexible-server update -g "$RG" -n "$PG_SERVER" --admin-password "$PG_ADMIN_PASSWORD" -o none
 fi
 PG_HOST=$(az postgres flexible-server show -n "$PG_SERVER" -g "$RG" --query fullyQualifiedDomainName -o tsv)
 
