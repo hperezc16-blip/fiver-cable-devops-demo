@@ -6,17 +6,14 @@
 #   Azure Container Apps      -> ms_auth, ms_catalogo, ms_pedidos, ms_pagos
 # Idempotente: se puede ejecutar en cada despliegue. Lo ejecuta el pipeline
 # (AzureCLI@2) o manualmente con "az login" previo.
-# Las claves de PostgreSQL y el secreto JWT se generan en cada despliegue y
-# solo viven como secretos del pipeline y de Container Apps.
+# Variables requeridas: PG_ADMIN_PASSWORD, JWT_SECRET_STAGING
 # ============================================================================
 set -euo pipefail
 
-PG_ADMIN_PASSWORD="Fc$(openssl rand -hex 12)A9"
-JWT_SECRET_STAGING="$(openssl rand -hex 32)"
-echo "##vso[task.setsecret]$PG_ADMIN_PASSWORD"
-echo "##vso[task.setsecret]$JWT_SECRET_STAGING"
+: "${PG_ADMIN_PASSWORD:?Definir PG_ADMIN_PASSWORD como variable secreta del pipeline}"
+: "${JWT_SECRET_STAGING:?Definir JWT_SECRET_STAGING como variable secreta del pipeline}"
 
-LOCATION="${AZ_LOCATION:-}"
+LOCATION="${AZ_LOCATION:-eastus}"
 RG="${AZ_RESOURCE_GROUP:-rg-fivercable-staging}"
 SUFIJO="${AZ_SUFIJO:-umg2026}"
 ACR="acrfivercable${SUFIJO}"
@@ -25,21 +22,6 @@ PG_ADMIN="fiveradmin"
 DB_NAME="fivercable_db"
 ACA_ENV="cae-fivercable-staging"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
-
-echo "==> Registro de proveedores de recursos"
-for ns in Microsoft.App Microsoft.OperationalInsights Microsoft.ContainerRegistry Microsoft.DBforPostgreSQL; do
-  az provider register -n "$ns" --wait -o none
-done
-
-# Las suscripciones Azure for Students limitan las regiones permitidas por política.
-if [ -z "$LOCATION" ]; then
-  PERMITIDAS=$(az policy assignment list --query "[].parameters.listOfAllowedLocations.value" -o tsv 2>/dev/null | tr '\t' '\n' | sort -u)
-  for cand in eastus2 centralus southcentralus westus2 eastus westus3 canadacentral brazilsouth mexicocentral; do
-    if [ -z "$PERMITIDAS" ] || echo "$PERMITIDAS" | grep -qx "$cand"; then LOCATION="$cand"; break; fi
-  done
-  [ -z "$LOCATION" ] && LOCATION=$(echo "$PERMITIDAS" | head -1)
-fi
-echo "Región seleccionada: $LOCATION"
 
 echo "==> Grupo de recursos $RG ($LOCATION)"
 az group create -n "$RG" -l "$LOCATION" -o none
@@ -58,8 +40,6 @@ if ! az postgres flexible-server show -n "$PG_SERVER" -g "$RG" -o none 2>/dev/nu
     --tier Burstable --sku-name Standard_B1ms --storage-size 32 --version 16 \
     --public-access 0.0.0.0 --yes -o none
   az postgres flexible-server db create -g "$RG" -s "$PG_SERVER" -d "$DB_NAME" -o none
-else
-  az postgres flexible-server update -g "$RG" -n "$PG_SERVER" --admin-password "$PG_ADMIN_PASSWORD" -o none
 fi
 PG_HOST=$(az postgres flexible-server show -n "$PG_SERVER" -g "$RG" --query fullyQualifiedDomainName -o tsv)
 
@@ -77,15 +57,13 @@ else
   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f db/init/01_schema.sql   # objetos idempotentes
 fi
 
-echo "==> Construir y publicar imágenes en ACR (tag $IMAGE_TAG)"
-az acr login -n "$ACR"
+echo "==> Construir imágenes en ACR (tag $IMAGE_TAG)"
 for svc in auth catalogo pedidos pagos; do
-  docker build -t "$ACR_SERVER/fivercable/ms_${svc}:${IMAGE_TAG}" -f "docker/Dockerfile.${svc}" .
-  docker push "$ACR_SERVER/fivercable/ms_${svc}:${IMAGE_TAG}"
+  az acr build -r "$ACR" -t "fivercable/ms_${svc}:${IMAGE_TAG}" -f "docker/Dockerfile.${svc}" . -o none
 done
 
 echo "==> Entorno de Azure Container Apps $ACA_ENV"
-az extension add --name containerapp --upgrade -y -o none 2>/dev/null || true
+az extension add --name containerapp --upgrade -y -o none
 az containerapp env show -n "$ACA_ENV" -g "$RG" -o none 2>/dev/null || \
   az containerapp env create -n "$ACA_ENV" -g "$RG" -l "$LOCATION" -o none
 
@@ -112,7 +90,7 @@ desplegar() {  # $1=servicio $2=puerto $3=variables extra
 AUTH_FQDN=$(desplegar auth 3000 "")
 CAT_FQDN=$(desplegar catalogo 3001 "")
 PED_FQDN=$(desplegar pedidos 3002 "")
-PAG_FQDN=$(desplegar pagos 3003 "AUTH_PUBLIC_URL=https://${AUTH_FQDN}")
+PAG_FQDN=$(desplegar pagos 3003 "")
 
 echo "==> Verificación de salud"
 for f in "$AUTH_FQDN" "$CAT_FQDN" "$PED_FQDN" "$PAG_FQDN"; do
@@ -129,4 +107,3 @@ echo "##vso[task.setvariable variable=CATALOGO_URL]https://${CAT_FQDN}"
 echo "##vso[task.setvariable variable=PEDIDOS_URL]https://${PED_FQDN}"
 echo "##vso[task.setvariable variable=PAGOS_URL]https://${PAG_FQDN}"
 echo "##vso[task.setvariable variable=STAGING_DATABASE_URL;issecret=true]${DATABASE_URL}"
-echo "Portal de cobro en campo: https://${PAG_FQDN}/portal"

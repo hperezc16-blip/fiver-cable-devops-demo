@@ -13,7 +13,7 @@ Seminario de Tecnologías de Información 2026 - Universidad Mariano Gálvez de 
 | `ms_auth` | 3000 | `usuarios_db` | Registro, login JWT, roles y estado del suscriptor (auditoría por trigger) |
 | `ms_catalogo` | 3001 | `red_db` | Planes de servicio, inventario de ONUs, señal óptica y estado OLT |
 | `ms_pedidos` | 3002 | `soporte_db` | Tickets de soporte con prioridad automática y SLA |
-| `ms_pagos` | 3003 | `billing_db` | Facturas FEL, pagos, cierre diario y **portal de cobro en campo** (`/portal`) |
+| `ms_pagos` | 3003 | `billing_db` | Facturas FEL, pagos y cierre diario |
 
 - Lenguaje: Python 3.11 + FastAPI - SGBD: PostgreSQL 16 (ambos libres).
 - Patrón *database-per-service*: un esquema por microservicio (script en `db/init`).
@@ -25,6 +25,7 @@ Seminario de Tecnologías de Información 2026 - Universidad Mariano Gálvez de 
 src/            código de los microservicios (common, ms_auth, ms_catalogo, ms_pedidos, ms_pagos)
 db/init/        01_schema.sql (Entregable 8) y 02_seed.sql (datos de prueba)
 docker/         Dockerfile por microservicio
+prototipo/      prototipo web del equipo (index.html), usado en las pruebas de aceptación
 tests/          unit, integration, system, acceptance (Selenium), security, performance
 infra/azure/    despliegue de Staging en Azure Container Apps
 docs/           plan de pruebas y documentación técnica
@@ -37,7 +38,6 @@ Jenkinsfile           pipeline equivalente para Jenkins
 ```bash
 cp .env.example .env
 docker compose up -d --build --wait
-# Portal de cobro:  http://localhost:3003/portal
 # API docs:         http://localhost:3000/docs  (3001, 3002, 3003)
 ```
 
@@ -53,7 +53,24 @@ python -m pytest --html=reports/reporte-pruebas.html --self-contained-html --cov
 ```
 
 Marcadores disponibles: `unit`, `integration`, `system`, `acceptance`, `security`, `performance`.
-Cada prueba lleva el ID del caso del Plan de Pruebas (`CP-01` ... `CP-26`), visible en el reporte HTML.
+Cada prueba lleva el ID del caso del Plan de Pruebas (`CP-01` ... `CP-30`), visible en el reporte HTML.
+
+## Ejecutar Selenium en su computadora
+
+Las pruebas de aceptación recorren el prototipo (`prototipo/index.html`) como cliente, técnico y
+administrador. Solo necesitan Python 3.11 o superior y Google Chrome, sin Docker ni base de datos.
+
+En Windows, dar doble clic a `ejecutar_selenium.bat`, o desde la terminal:
+
+```bash
+pip install -r requirements-selenium.txt
+set HEADLESS=0
+set PAUSA=1
+python -m pytest tests/acceptance -v --html=reports/reporte-selenium.html --self-contained-html
+```
+
+`HEADLESS=0` abre Chrome visible y `PAUSA=1` espera un segundo entre pasos para poder grabarlo.
+Las capturas de cada paso quedan en `reports/capturas`.
 
 ## CI/CD en Azure Pipelines
 

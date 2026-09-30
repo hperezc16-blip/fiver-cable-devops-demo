@@ -7,10 +7,7 @@ import os
 import time
 import uuid
 
-import httpx
-import psycopg
 import pytest
-from psycopg.rows import dict_row
 
 AUTH = os.getenv("AUTH_URL", "http://localhost:3000")
 CATALOGO = os.getenv("CATALOGO_URL", "http://localhost:3001")
@@ -37,6 +34,8 @@ def dsn() -> str:
 @pytest.fixture
 def db():
     """Conexión transaccional: todo se revierte al terminar la prueba (aislamiento)."""
+    import psycopg
+    from psycopg.rows import dict_row
     conn = psycopg.connect(dsn(), row_factory=dict_row, autocommit=False)
     yield conn
     conn.rollback()
@@ -46,12 +45,15 @@ def db():
 @pytest.fixture
 def db_commit():
     """Conexión con autocommit para preparar datos que los servicios deben ver."""
+    import psycopg
+    from psycopg.rows import dict_row
     conn = psycopg.connect(dsn(), row_factory=dict_row, autocommit=True)
     yield conn
     conn.close()
 
 
 def _login(correo, password) -> str:
+    import httpx
     r = httpx.post(f"{AUTH}/api/auth/login", json={"correo": correo, "password": password}, timeout=10)
     r.raise_for_status()
     return r.json()["access_token"]
