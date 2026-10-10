@@ -54,7 +54,7 @@ python -m pytest --html=reports/reporte-pruebas.html --self-contained-html --cov
 ```
 
 Marcadores disponibles: `unit`, `integration`, `system`, `acceptance`, `security`, `performance`.
-Cada prueba lleva el ID del caso del Plan de Pruebas (`CP-01` … `CP-32`), visible en el reporte HTML.
+Cada prueba lleva el ID del caso del Plan de Pruebas (`CP-01` … `CP-39`), visible en el reporte HTML.
 
 ## Ejecutar Selenium en su computadora
 
