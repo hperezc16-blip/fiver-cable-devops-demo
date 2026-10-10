@@ -13,7 +13,7 @@ Seminario de Tecnologías de Información 2026 - Universidad Mariano Gálvez de 
 | `ms_auth` | 3000 | `usuarios_db` | Registro, login JWT, roles y estado del suscriptor (auditoría por trigger) |
 | `ms_catalogo` | 3001 | `red_db` | Planes de servicio, inventario de ONUs, señal óptica y estado OLT |
 | `ms_pedidos` | 3002 | `soporte_db` | Tickets de soporte con prioridad automática y SLA |
-| `ms_pagos` | 3003 | `billing_db` | Facturas FEL, pagos, cierre diario y **portal de cobro en campo** (`/portal`) |
+| `ms_pagos` | 3003 | `billing_db` | Facturas FEL, pagos, cierre diario y **portal web de operaciones** (`/portal`) |
 
 - Lenguaje: Python 3.11 + FastAPI - SGBD: PostgreSQL 16 (ambos libres).
 - Patrón *database-per-service*: un esquema por microservicio (script en `db/init`).
@@ -38,11 +38,11 @@ Jenkinsfile           pipeline equivalente para Jenkins
 ```bash
 cp .env.example .env
 docker compose up -d --build --wait
-# Portal de cobro:  http://localhost:3003/portal
+# Portal web:       http://localhost:3003/portal
 # API docs:         http://localhost:3000/docs  (3001, 3002, 3003)
 ```
 
-Usuarios de prueba: ver `TEST_*` en `.env.example`.
+Usuarios de prueba de los 5 roles (cliente, técnico, secretaría, jefatura y administrador): ver `TEST_*` en `.env.example`.
 
 ## Ejecutar las pruebas
 
@@ -54,7 +54,7 @@ python -m pytest --html=reports/reporte-pruebas.html --self-contained-html --cov
 ```
 
 Marcadores disponibles: `unit`, `integration`, `system`, `acceptance`, `security`, `performance`.
-Cada prueba lleva el ID del caso del Plan de Pruebas (`CP-01` … `CP-39`), visible en el reporte HTML.
+Cada prueba lleva el ID del caso del Plan de Pruebas (`CP-01` … `CP-43`), visible en el reporte HTML.
 
 ## Ejecutar Selenium en su computadora
 

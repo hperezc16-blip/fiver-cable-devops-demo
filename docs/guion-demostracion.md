@@ -1,74 +1,77 @@
-# Guion de demostración de las aplicaciones
+# Guion de demostración de la aplicación
 
-Este guion sirve para la demostración en vivo de la exposición. Cubre las tres aplicaciones del proyecto: el portal de cobro, el prototipo web y las APIs.
+Este guion sirve para la demostración en vivo y para grabar el video del equipo. La aplicación es el **portal web de operaciones** de Fiver Cable, conectado a las cuatro APIs y a PostgreSQL.
 
 | Aplicación | Dirección | Qué demuestra |
 |---|---|---|
-| Portal de cobro en campo (producción local) | `http://localhost:3003/portal` | Proceso automatizado con las APIs y PostgreSQL |
-| Prototipo web por perfiles | `prototipo/index.html` | Experiencia de cada rol de la empresa |
+| Portal web (5 roles) | `http://localhost:3003/portal` | Proceso de cobro automatizado y operación de la empresa |
 | APIs (OpenAPI) | `http://localhost:3000/docs` a `:3003/docs` | Servicios, endpoints y estado |
+| Prototipo inicial | `prototipo/index.html` | Diseño original del equipo (datos simulados) |
+
+## Cuentas de demostración
+
+Son las cuentas de `.env.example` (variables `TEST_*`), solo para el ambiente de demostración. Escriba las contraseñas sin mostrarlas en pantalla.
+
+| Rol | Correo | Para mostrar |
+|---|---|---|
+| Técnico | `tecnico.campo@fivercable.com` | Cobro en campo, reactivación, tickets, red |
+| Secretaría | `secretaria@fivercable.com` | Registro de clientes, facturación, pago en oficina |
+| Jefatura | `jefatura@fivercable.com` | Panel de indicadores, cierre diario, auditoría |
+| Administrador | `admin@fivercable.com` | Todo, más alta de personal |
+| Cliente | `maria.ramirez@correo.gt` o `hazel.perez@fivercable.com` | Su cuenta, facturas y reporte de fallas |
+
+Datos útiles: el **cliente 7** (María José Ramírez) está *Moroso* con 2 facturas pendientes; el **cliente 9** (Ana Lucía García) está *Suspendido*; el **cliente 2** tiene 2 facturas de Q 499.00.
 
 ---
 
 ## Preparación (10 minutos antes)
 
 1. Abrir **Docker Desktop** y esperar a que diga *Engine running*.
-2. En la terminal de VS Code, dentro de la carpeta del proyecto, reiniciar los datos para que las facturas de demostración vuelvan a estar pendientes:
+2. En la terminal de VS Code, dentro de la carpeta del proyecto, reiniciar los datos de demostración:
    ```powershell
    docker compose down -v
    docker compose up -d --build --wait
    docker compose ps
    ```
    Los seis contenedores deben aparecer como `healthy` o `Up`.
-3. Abrir estas pestañas en el navegador, en este orden:
-   1. `http://localhost:3003/health`
-   2. `http://localhost:3003/portal`
-   3. `http://localhost:3003/api/facturas?id_cliente=1`
-   4. `prototipo/index.html` (doble clic en el archivo)
-   5. La presentación
-4. Tener a mano las capturas de `docs/evidencias/capturas` (diapositiva 7), por si algo falla.
+3. Abrir `http://localhost:3003/portal` en el navegador.
+4. Tener a mano las capturas de `docs/evidencias/capturas` por si algo falla.
 5. Cerrar el archivo `.env` y cualquier ventana que muestre contraseñas.
-6. Subir el zoom del navegador a 125 % para que se lea desde el fondo del salón.
+6. Subir el zoom del navegador a 110–125 % para que se lea desde el fondo del salón.
 
 ---
 
-## Demo 1: Portal de cobro en campo (2 min 30 s) · aplicación en producción
+## Demo principal (3 minutos): el proceso de cobro automatizado
 
 | # | Acción | Qué decir |
 |---|---|---|
-| 1 | Mostrar la terminal con `docker compose ps` | "La aplicación corre en contenedores: PostgreSQL y cuatro microservicios, todos sanos." |
-| 2 | Pestaña `/health` | "Cada servicio reporta su estado y la conexión a su base de datos." |
-| 3 | Pestaña `/portal`, escribir el correo del técnico y una contraseña **incorrecta** | "Si la contraseña es incorrecta, no entra, y el mensaje no revela si el correo existe." |
-| 4 | Iniciar sesión con la cuenta técnica de demostración (escribir la contraseña sin mostrarla) | "El sistema entrega un token firmado que expira en 60 minutos." |
-| 5 | Código de cliente **2**, método **Tarjeta**, campo de autorización vacío, **Buscar facturas** | "Aparecen sus dos facturas pendientes." |
-| 6 | Seleccionar **Cobrar Q 499.00** | "Con tarjeta, el sistema exige el código de autorización. La API rechaza el cobro." |
-| 7 | Cambiar a **Efectivo**, **Buscar facturas**, **Cobrar** | "Cobro registrado: la factura pasa a Pagado y se genera el recibo único FC-…" |
-| 8 | **Buscar facturas** otra vez | "La factura pagada desaparece de las pendientes. No se puede cobrar dos veces." |
-| 9 | **Cerrar sesión** | "La sesión se borra de la memoria del navegador." |
-| 10 | Pestaña `/api/facturas?id_cliente=1` | "Sin token, la API responde 401. Nadie consulta datos sin autenticarse." |
+| 1 | Terminal: `docker compose ps` | "La aplicación corre en contenedores: PostgreSQL y cuatro microservicios, todos sanos." |
+| 2 | Login con contraseña incorrecta | "Si la contraseña es incorrecta no entra, y el mensaje no revela si el correo existe." |
+| 3 | Login como **Técnico** | "Cada rol ve su propio menú. Este es el panel del técnico con los indicadores del día." |
+| 4 | **Cobro en campo** → cliente `7`, método **Tarjeta**, sin autorización → **Buscar facturas** | "Vemos la ficha del cliente: está Moroso y tiene dos facturas pendientes." |
+| 5 | **Cobrar** | "Con tarjeta, la API exige el código de autorización y rechaza el cobro." |
+| 6 | Cambiar a **Efectivo** → **Cobrar** las dos facturas | "Cobro registrado: factura Pagada y recibo único FC-…, que se puede imprimir." |
+| 7 | **Reactivar servicio** | "Sin saldo pendiente, el técnico reactiva el servicio en el momento, sin pasar por oficina. Ese es el problema que resolvimos." |
+| 8 | **Cerrar sesión** → login como **Jefatura** | "Jefatura ve el impacto al instante: lo recaudado hoy subió y el cierre diario se calcula solo." |
+| 9 | **Auditoría** | "Cada cambio de estado queda registrado con el usuario que lo hizo, y no se puede editar." |
+| 10 | Abrir `http://localhost:3003/api/facturas?id_cliente=1` | "Sin token, la API responde 401. Nadie consulta datos sin autenticarse." |
 
-**Si alguien pregunta por la base de datos** (opcional, 20 s):
+## Demos adicionales (si hay tiempo, 1 minuto cada una)
 
-```powershell
-docker exec fiver_postgres psql -U postgres -d fivercable_db -c "SELECT id_factura, estado_pago FROM billing_db.facturas_fel;"
-```
+**Secretaría (oficina):**
+1. **Clientes** → **Registrar suscriptor** → llenar el formulario → **Registrar**. El sistema asigna el código.
+2. Desde la ficha, **Emitir factura** → elegir el plan → **Emitir factura FEL**.
+3. **Pago en oficina** → cobrar con **Tarjeta** y un código de autorización (por ejemplo `AUT-1234`).
 
----
+**Cliente (en celular):**
+1. En Chrome presione `F12` y luego `Ctrl + Shift + M` para ver la página en tamaño celular.
+2. Login con la cuenta de cliente → ver saldo, plan y equipo.
+3. **Soporte técnico** → describir la falla → **Enviar reporte**. Muestra la prioridad y el tiempo de atención.
+4. Abrir el menú con el botón ☰.
 
-## Demo 2: Prototipo web por perfiles (1 min, opcional si sobra tiempo)
+**Administrador:** **Personal** → crear una cuenta de técnico; **Red y equipos** → ver la señal crítica de los equipos.
 
-Abrir `prototipo/index.html`. Si el tiempo es corto, mostrar solo los pasos 1, 3 y 5.
-
-| # | Perfil | Acción | Qué decir |
-|---|---|---|
-| 1 | Cliente | **Cliente** → **Ingresar** → **Facturas** → **Ver detalle** → **Pagar ahora** → **Continuar** → **Confirmar pago** | "El cliente también podrá pagar desde su cuenta." |
-| 2 | Cliente | **Soporte** → falla *Sin señal* → **Enviar reporte** | "Reporta una falla y recibe su número de ticket." |
-| 3 | Técnico | **Técnico** → **Ingresar** → **Iniciar visita** → **Registrar cobro** → **Confirmar cobro** | "La visión móvil del técnico: rutas del día y cobro." |
-| 4 | Administrador | **Inventario** → **Registrar** un equipo; repetir la misma serie | "No se permite repetir la serie de un equipo." |
-| 5 | Jefatura | **Jefatura** → **Ingresar** | "Indicadores de la operación para la toma de decisiones." |
-| 6 | Secretaría | **Agendar visita técnica** → **Programar visita** | "Coordinación de visitas desde oficina." |
-
-> Aclaración para la exposición: el prototipo funciona con datos simulados en el navegador. El flujo real conectado a la base de datos es el del portal (Demo 1). Los perfiles Jefatura y Secretaría todavía no tienen permisos en la API.
+**Seguridad por rol:** con la cuenta de Jefatura, abrir un cliente en **Clientes**: no aparecen botones para cobrar ni cambiar estado. Aunque se llamara a la API directamente, respondería 403.
 
 ---
 
@@ -76,10 +79,10 @@ Abrir `prototipo/index.html`. Si el tiempo es corto, mostrar solo los pasos 1, 3
 
 | Problema | Qué hacer |
 |---|---|
-| Docker no arranca o el portal no carga | Explicar el flujo con las capturas reales de la diapositiva 7 |
-| No hay facturas pendientes (ya se cobraron en un ensayo) | `docker compose down -v` y `docker compose up -d --wait` (tarda unos 30 s) |
-| "No se pudo conectar con autenticación" | Verificar que `ms_auth` esté en `docker compose ps`; si no, `docker compose up -d ms_auth` |
-| Se acaba el tiempo | Saltar el Demo 2 y pasar a la diapositiva de seguridad |
+| Docker no arranca o el portal no carga | Explicar el flujo con las capturas de `docs/evidencias/capturas` (M03, S03, M04, M05) |
+| Ya no hay facturas pendientes (se cobraron en un ensayo) | `docker compose down -v` y `docker compose up -d --wait` (tarda unos 30 s) |
+| "No se pudo conectar con el servicio" | Verificar con `docker compose ps` que los cuatro servicios estén arriba; si falta uno, `docker compose up -d` |
+| Se acaba el tiempo | Saltar las demos adicionales y pasar a la diapositiva de seguridad |
 
 ## Regenerar las capturas de evidencia
 

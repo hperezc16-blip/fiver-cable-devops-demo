@@ -50,21 +50,32 @@ Es un proceso frecuente, con reglas claras (una factura, un monto, un método de
 
 ### Descripción
 
-Es una plataforma de cuatro microservicios con un **portal web de cobro en campo**. El técnico inicia sesión desde el celular o la computadora, busca las facturas pendientes del cliente, elige el método de pago y registra el cobro. El sistema valida el pago, lo guarda, marca la factura como *Pagado* y muestra el número de recibo.
+Es una plataforma de cuatro microservicios con un **portal web de operaciones** (`/portal`), responsive para celular y computadora. Cada usuario ve un menú según su rol. El proceso central es el **cobro en campo**: el técnico inicia sesión, busca al cliente, ve su ficha y sus facturas pendientes, elige el método de pago y registra el cobro. El sistema valida el pago, lo guarda, marca la factura como *Pagado*, emite un recibo imprimible y permite **reactivar el servicio** del cliente en el mismo momento.
+
+### Pantallas por rol
+
+| Rol | Pantallas |
+|---|---|
+| **Técnico** | Inicio (jornada e indicadores), Cobro en campo, Clientes, Tickets (tomar y cerrar), Red y equipos (estado de ONU, registro), Mi perfil |
+| **Secretaría** | Inicio, Clientes (registro de suscriptores), Pago en oficina, Facturación (emitir factura FEL), Tickets (crear para clientes), Cierre diario, Mi perfil |
+| **Jefatura** | Panel de indicadores, Cierre diario y recaudación por día, Clientes, Tickets, Red, Auditoría (todo en solo lectura), Mi perfil |
+| **Administrador** | Todas las anteriores y además Personal (alta de cuentas con rol) |
+| **Cliente (suscriptor)** | Mi cuenta (saldo, plan, equipo y señal), Mis facturas, Soporte técnico (reportar falla y seguimiento), Planes, Mi perfil |
 
 ### Funcionalidades principales
 
-| Funcionalidad | Servicio | Endpoint / pantalla |
+| Funcionalidad | Servicio | Endpoint |
 |---|---|---|
-| Inicio de sesión con JWT y roles | `ms_auth` | `POST /api/auth/login`, portal |
-| Cambio de contraseña autenticado | `ms_auth` | `PUT /api/auth/cambiar-password`, portal |
+| Inicio de sesión con JWT y 5 roles | `ms_auth` | `POST /api/auth/login` |
+| Cambio de contraseña autenticado | `ms_auth` | `PUT /api/auth/cambiar-password` |
 | Registro de suscriptores con validación de NIT/DPI y política de contraseña | `ms_auth` | `POST /api/auth/registro` |
-| Cambio de estado del servicio, con transiciones válidas y auditoría | `ms_auth` | `PATCH /api/clientes/{id}/estado` |
-| Consulta de facturas pendientes | `ms_pagos` | `GET /api/facturas`, portal |
-| **Registro de cobro con recibo** | `ms_pagos` | `POST /api/pagos`, portal |
-| Cierre diario de pagos por método | `ms_pagos` | `GET /api/pagos/cierre-diario` |
-| Planes, equipos ONU y señal óptica | `ms_catalogo` | `/api/planes`, `/api/onus` |
-| Tickets de soporte con prioridad y SLA | `ms_pedidos` | `/api/tickets` |
+| Búsqueda de clientes y alta de personal | `ms_auth` | `GET /api/clientes`, `POST /api/usuarios` |
+| Cambio de estado del servicio con transiciones válidas y auditoría | `ms_auth` | `PATCH /api/clientes/{id}/estado`, `GET /api/auditoria` |
+| Emisión y consulta de facturas FEL | `ms_pagos` | `POST /api/facturas`, `GET /api/facturas` |
+| **Registro de cobro con recibo y registro de quién cobró** | `ms_pagos` | `POST /api/pagos` |
+| Historial de cobros, cierre diario e indicadores | `ms_pagos` | `GET /api/pagos`, `/api/pagos/cierre-diario`, `/api/resumen` |
+| Planes, equipos ONU, señal óptica y estado en la OLT | `ms_catalogo` | `/api/planes`, `/api/onus`, `/api/onus/criticas`, `/api/onus/estado` |
+| Tickets de soporte con prioridad automática, SLA, asignación y cierre | `ms_pedidos` | `/api/tickets`, `/api/tickets/{id}/tomar`, `/api/tickets/{id}/cerrar` |
 
 ### Tecnologías
 
@@ -148,9 +159,9 @@ docs/evidencias/      capturas, reporte de pruebas y script que las genera
 
 - **`src/common/base.py`**: cada servicio se crea con `crear_app()`, que registra el pool de conexiones, el CORS restringido por la variable `CORS_ORIGINS`, un manejador que oculta las trazas internas y el endpoint `/health`. `usuario_actual()` valida el JWT y `requiere_rol()` protege las rutas por rol. `get_conn()` fija el `search_path` del esquema del servicio en cada transacción.
 - **Separación API/lógica**: cada `main.py` contiene solo las rutas HTTP y el SQL. Las reglas de negocio están en `logic.py`, que no depende de la base de datos y por eso se puede probar con pruebas unitarias.
-- **`src/ms_pagos/main.py` → `registrar_pago`**: es el núcleo del proceso. Exige el rol Técnico o Administrador, valida el método y el código de autorización, bloquea la factura con `FOR UPDATE`, rechaza facturas que no estén pendientes, exige que el monto coincida con la factura e inserta el pago con un identificador generado por `secrets`.
-- **`db/init/01_schema.sql`**: contiene las restricciones `CHECK` sobre estados, roles y montos, las claves foráneas, el trigger `trg_procesar_pago_exitoso` (que marca la factura como pagada), el trigger `trg_auditar_cliente` (que registra en la auditoría cada cambio de estado) y la vista `vw_cierre_diario_pagos`.
-- **`src/ms_pagos/portal.html`**: es una interfaz de una sola página. Escapa todo dato antes de insertarlo en el HTML y guarda el token solo en memoria (no usa `localStorage`).
+- **`src/ms_pagos/main.py` → `registrar_pago`**: es el núcleo del proceso. Exige el rol Técnico, Secretaría o Administrador, valida el método y el código de autorización, bloquea la factura con `FOR UPDATE`, rechaza facturas que no estén pendientes, exige que el monto coincida con la factura e inserta el pago con un identificador generado por `secrets` y el correo del usuario que cobró (`registrado_por`).
+- **`db/init/01_schema.sql`**: contiene las restricciones `CHECK` sobre estados, roles y montos, las claves foráneas, el trigger `trg_procesar_pago_exitoso` (que marca la factura como pagada), el trigger `trg_auditar_cliente` (que registra en la auditoría cada cambio de estado con el usuario de la aplicación que lo hizo) y la vista `vw_cierre_diario_pagos`.
+- **`src/ms_pagos/portal.html`**: es la aplicación web de una sola página (HTML, CSS y JavaScript sin dependencias de compilación). Tiene un menú por rol, consume las APIs de los cuatro servicios, escapa todo dato antes de insertarlo en el HTML y guarda el token solo en memoria (no usa `localStorage`). Es responsive: en celular el menú se abre con un botón y las tablas se muestran como tarjetas.
 
 ---
 
@@ -180,7 +191,7 @@ ms_pedidos       Up 18 seconds (healthy)   0.0.0.0:3002->3002/tcp
 
 | URL | Uso |
 |---|---|
-| `http://localhost:3003/portal` | Portal de cobro en campo |
+| `http://localhost:3003/portal` | Portal web de operaciones (todos los roles) |
 | `http://localhost:3000/docs` … `:3003/docs` | Documentación OpenAPI de cada servicio |
 | `http://localhost:300X/health` | Estado del servicio y de su conexión a la base de datos |
 
@@ -215,13 +226,13 @@ Las capturas de `ms_catalogo` y `ms_pedidos` también están en [evidencias/capt
 
 ## 5. Pruebas
 
-La suite usa Pytest. Cada caso lleva el ID del plan de pruebas (CP-01 a CP-39), que se muestra en el reporte HTML.
+La suite usa Pytest. Cada caso lleva el ID del plan de pruebas (CP-01 a CP-43), que se muestra en el reporte HTML.
 
 ```powershell
 python -m pytest --html=reports/reporte-pruebas.html --self-contained-html --cov=src
 ```
 
-### Resultados de la ejecución del 10/10/2026 (commit `a93a415` más los cambios de esta entrega)
+### Resultados de la ejecución del 10/10/2026
 
 | Tipo | Marcador | Resultado |
 |---|---|---|
@@ -229,42 +240,41 @@ python -m pytest --html=reports/reporte-pruebas.html --self-contained-html --cov
 | Integración con la base de datos (triggers, procedimientos, restricciones) | `integration` | 5 aprobadas |
 | Sistema (flujo de cobro completo por API, cobro duplicado, monto) | `system` | 9 aprobadas |
 | Aceptación con Selenium (prototipo: cliente, técnico, administrador, jefatura, secretaría) | `acceptance` | 8 aprobadas |
-| Seguridad (token ausente o manipulado, roles, aislamiento, inyección SQL) | `security` | 5 aprobadas |
+| Seguridad (token, roles de los 5 perfiles, aislamiento, inyección SQL, auditoría) | `security` | 9 aprobadas |
 | Rendimiento | `performance` | 1 aprobada, **1 fallida** |
-| **Total** | | **58 aprobadas, 1 fallida** |
+| **Total** | | **62 aprobadas, 1 fallida** |
 
 - **Análisis estático:** `ruff check` dio *All checks passed*.
-- **Rendimiento:** CP-25 (latencia individual) aprobó, con un promedio de 6.3 ms, p95 de 8.5 ms y máximo de 51.3 ms. CP-26 (200 solicitudes con 20 concurrentes) **falló**: el p95 fue de 1509 ms frente a un límite de 900 ms, aunque hubo **0 errores**. Todas las solicitudes respondieron bien, pero en cola. La causa probable es el pool de conexiones limitado a 5 por servicio y Docker Desktop en Windows. El ajuste se detalla en la sección 9.
-- **Cobertura:** 50 % del total. Las reglas de negocio tienen entre 91 % y 100 %. Los `main.py` aparecen con 0 % porque las pruebas de sistema los ejecutan dentro de los contenedores, donde la herramienta de cobertura del host no los mide. Esos módulos sí se ejercitan en las pruebas de sistema y seguridad.
+- **Rendimiento:** CP-25 (latencia individual) aprobó, con un promedio de 6.3 ms y p95 de 8.5 ms. CP-26 (200 solicitudes con 20 concurrentes) **falló**: el p95 fue de unos 1.5 s frente a un límite de 900 ms, aunque hubo **0 errores**. Todas las solicitudes respondieron bien, pero en cola. La causa probable es el pool de conexiones limitado a 5 por servicio y Docker Desktop en Windows. El ajuste se detalla en la sección 9.
+- **Cobertura:** 43 % del total. Las reglas de negocio (`logic.py`) tienen entre 91 % y 100 %. Los `main.py` aparecen con 0 % porque las pruebas de sistema y seguridad los ejecutan dentro de los contenedores, donde la herramienta de cobertura del host no los mide; sí se ejercitan en esas pruebas.
+- **Recorrido de la interfaz:** se recorrieron con Selenium las 34 pantallas de los 5 roles en computadora (1440 px) y en celular (390 px), sin errores de carga ni desbordes horizontales.
 
-Reporte completo: [evidencias/reporte-pruebas.html](evidencias/reporte-pruebas.html), con el único token de demostración que aparecía en un traceback ya oculto. Las capturas de Selenium del prototipo están en [evidencias/capturas-prototipo](evidencias/capturas-prototipo/).
+Reporte completo: [evidencias/reporte-pruebas.html](evidencias/reporte-pruebas.html), con los tokens de demostración ocultos. Las capturas de Selenium del prototipo están en [evidencias/capturas-prototipo](evidencias/capturas-prototipo/).
 
-### Pruebas funcionales del flujo de cobro (portal integrado)
+### Pruebas funcionales de la aplicación web
 
-| Caso | Resultado esperado | Obtenido | Evidencia |
-|---|---|---|---|
-| Buscar facturas pendientes del cliente 2 | Lista FEL-A-1002 y FEL-A-1003 | ✔ | M03 |
-| Cobrar con tarjeta sin código de autorización | Rechazo | ✔ *"El método de pago requiere código de autorización"* | S03 |
-| Cobrar FEL-A-1002 en efectivo | Recibo y estado Pagado | ✔ Recibo `FC-20261010180358-FFF0854E` | M04 |
-| Volver a buscar | FEL-A-1002 ya no aparece como pendiente | ✔ | M05 |
-| Cobrar de nuevo FEL-A-1002 por API | 409 | ✔ *"La factura ya está en estado Pagado"* | Anexo A |
+| Caso | Rol | Resultado esperado | Obtenido | Evidencia |
+|---|---|---|---|---|
+| Buscar facturas pendientes del cliente 2 | Técnico | Ficha del cliente y FEL-A-1002 / FEL-A-1003 | ✔ | M03 |
+| Cobrar con tarjeta sin código de autorización | Técnico | Rechazo | ✔ *"El método de pago requiere código de autorización"* | S03 |
+| Cobrar FEL-A-1002 en efectivo | Técnico | Recibo y estado Pagado | ✔ Recibo `FC-20261010190623-B5044294` | M04 |
+| Cobrar todo el saldo de un cliente Moroso y reactivar | Técnico | Servicio Activo, ONU en línea, evento de auditoría | ✔ | M05, S05 |
+| Cobrar de nuevo FEL-A-1002 por API | Técnico | 409 | ✔ *"La factura ya está en estado Pagado"* | Anexo A |
+| Registrar suscriptor, emitir factura y cobrar en oficina con tarjeta | Secretaría | Cliente nuevo, factura FEL y recibo | ✔ | M13, CP-41 |
+| Consultar panel, cierre y auditoría sin opciones de modificación | Jefatura | Solo lectura | ✔ | M12, CP-40 |
+| Crear cuenta de técnico y registrar ONU | Administrador | Cuenta y equipo creados | ✔ | M11 |
+| Ver su cuenta y reportar una falla desde el celular | Cliente | Ticket con prioridad y SLA | ✔ | M14, S04 |
 
-Estado en la base de datos después del cobro:
+Cobros registrados en la base de datos durante la ejecución, con el usuario que los hizo (extracto):
 
 ```
- id_pago | id_factura |  id_transaccion_pasarela   | monto_pagado | metodo_pago
----------+------------+----------------------------+--------------+------------
-       1 |          2 | FC-20261010180358-FFF0854E |       499.00 | Efectivo
-
- id_factura |  factura   | id_cliente_ref | monto_total | estado_pago
-------------+------------+----------------+-------------+------------
-          1 | FEL-A-1001 |              1 |      299.00 | Pendiente
-          2 | FEL-A-1002 |              2 |      499.00 | Pagado
-          3 | FEL-A-1003 |              2 |      499.00 | Pendiente
-
-Cierre diario (vw_cierre_diario_pagos)
-   fecha    | metodo_pago | total_transacciones | total_recaudado
- 2026-10-10 | Efectivo    |                   1 |          499.00
+  id_transaccion_pasarela   | id_factura | monto_pagado |  metodo_pago  |        registrado_por
+----------------------------+------------+--------------+---------------+------------------------------
+ FC-HIST-0002               |         10 |       299.00 | Tarjeta       | secretaria@fivercable.com
+ FC-20261010190623-B5044294 |          2 |       499.00 | Efectivo      | tecnico.campo@fivercable.com
+ FC-20261010190624-371689B0 |          4 |       299.00 | Efectivo      | tecnico.campo@fivercable.com
+ FC-20261010190625-C4E10ACE |          5 |       299.00 | Efectivo      | tecnico.campo@fivercable.com
+ FC-20261010190917-4383F912 |         16 |       199.00 | Tarjeta       | secretaria@fivercable.com
 ```
 
 ---
@@ -275,54 +285,92 @@ Cierre diario (vw_cierre_diario_pagos)
 
 - Un navegador actualizado (Chrome, Edge o Firefox), en computadora o celular.
 - La dirección del portal: `http://localhost:3003/portal` en el ambiente local, o la URL de staging que entregue el equipo.
-- Una cuenta con rol **Técnico** o **Administrador**, que entrega Administración. Las cuentas de suscriptor no pueden usar el portal de cobro.
+- Una cuenta que entrega Administración. El menú que verá depende de su rol: Cliente, Técnico, Secretaría, Jefatura o Administrador.
 
-### Paso 1. Iniciar sesión
+> Para la demostración hay cuentas de prueba de cada rol (variables `TEST_*` de `.env.example`). Son solo para el ambiente de demostración y no deben usarse en producción.
+
+### Iniciar sesión
 
 Escriba su correo y su contraseña y seleccione **Iniciar sesión**. La contraseña nunca se muestra en pantalla.
 
 ![Inicio de sesión](evidencias/capturas/M01_inicio_sesion.png)
 
-Si los datos son incorrectos, el sistema responde con *Credenciales inválidas* y no indica cuál de los dos campos falló:
+Si los datos son incorrectos, el sistema responde con *Credenciales inválidas* y no indica cuál de los dos campos falló. Si olvidó su contraseña, seleccione **¿Olvidaste tu contraseña?** y solicite el restablecimiento a Administración.
 
 ![Credenciales inválidas](evidencias/capturas/S02_login_credenciales_invalidas.png)
 
-Si olvidó su contraseña, seleccione **¿Olvidaste tu contraseña?** y solicite el restablecimiento a Administración.
+Al entrar verá el **Inicio** de su rol, con indicadores y accesos rápidos. En computadora el menú está a la izquierda; en celular se abre con el botón de menú (☰).
 
-### Paso 2. Buscar las facturas del cliente
+![Panel del técnico](evidencias/capturas/M02_panel_tecnico.png)
 
-1. Escriba el **código de cliente**.
-2. Elija el **método de pago**: Efectivo, Tarjeta o Transferencia.
-3. Si el método es Tarjeta o Transferencia, escriba el **código de autorización** del voucher o de la transferencia.
-4. Seleccione **Buscar facturas**.
+### Técnico: cobro en campo
+
+1. Seleccione **Cobro en campo** en el menú.
+2. Escriba el **código de cliente**. Si no lo sabe, use **¿No sabe el código? Buscar cliente**.
+3. Elija el **método de pago**. Para Tarjeta o Transferencia escriba el **código de autorización** del voucher.
+4. Seleccione **Buscar facturas**. Verá la ficha del cliente (nombre, dirección, teléfono y estado del servicio) y sus facturas pendientes.
 
 ![Facturas pendientes](evidencias/capturas/M03_facturas_pendientes.png)
 
-### Paso 3. Cobrar
-
-Antes de cobrar, compruebe con el cliente el número de factura y el monto. Luego seleccione **Cobrar Q …** **una sola vez**. El cobro liquida la factura completa.
-
-Si falta información, el sistema rechaza el cobro y explica el motivo:
+5. Confirme con el cliente la factura y el monto, y seleccione **Cobrar Q …** una sola vez. Si falta información, el sistema rechaza el cobro y explica el motivo:
 
 ![Cobro rechazado](evidencias/capturas/S03_cobro_rechazado_sin_autorizacion.png)
 
-Cuando el cobro se registra, la factura cambia a **Pagado** y aparece el número de **recibo**. Entréguelo o dícteselo al cliente.
+6. Cuando el cobro se registra, la factura cambia a **Pagado** y aparece el **recibo** con número único, que puede **Imprimir** o dictar al cliente.
 
 ![Cobro exitoso](evidencias/capturas/M04_cobro_exitoso_recibo.png)
 
-Si vuelve a buscar, la factura pagada ya no aparece entre las pendientes:
+7. Si el cliente estaba **Moroso** o **Suspendido** y ya no tiene saldo, aparece **Reactivar servicio**. Al seleccionarlo, el servicio pasa a Activo y el equipo ONU queda en línea.
 
-![Factura ya no pendiente](evidencias/capturas/M05_factura_ya_no_pendiente.png)
+![Reactivación del servicio](evidencias/capturas/M05_reactivacion_servicio.png)
 
-### Paso 4. Cambiar la contraseña
+### Técnico: tickets y red
 
-Seleccione **Cambiar contraseña**. Escriba la contraseña actual, la nueva y la confirmación. La nueva contraseña debe tener al menos 8 caracteres, con una mayúscula, una minúscula y un número, y debe ser distinta de la actual.
+- **Tickets de soporte:** muestra los tickets pendientes con su prioridad. Use **Tomar** para asignárselo y **Cerrar** al resolverlo.
+- **Red y equipos:** lista las ONU de los clientes con su potencia y una etiqueta de señal (*Normal*, *Crítica baja*, *Crítica alta*). Puede cambiar el estado de un equipo en la OLT o **Registrar ONU** nueva.
 
-![Cambio de contraseña](evidencias/capturas/M06_formulario_cambio_password.png)
+![Tickets del técnico](evidencias/capturas/M06_tickets_tecnico.png)
 
-### Paso 5. Cerrar sesión
+![Red y equipos](evidencias/capturas/M11_red_equipos.png)
 
-Seleccione **Cerrar sesión** al terminar, sobre todo en equipos compartidos. La sesión expira sola a los 60 minutos.
+### Secretaría: atención de oficina
+
+- **Clientes → Registrar suscriptor:** complete nombres, DPI o NIT, teléfono, correo, plan, dirección y una contraseña inicial. El sistema valida el DPI/NIT y la política de contraseña, y asigna un código de cliente.
+- **Facturación → Emitir factura:** escriba el código de cliente, elija el plan (llena el monto) y seleccione **Emitir factura FEL**.
+- **Pago en oficina:** funciona igual que el cobro en campo.
+- **Tickets → Nuevo ticket:** registre la falla que reporta un cliente por teléfono.
+
+![Facturación](evidencias/capturas/M13_facturacion_secretaria.png)
+
+### Administrador
+
+Tiene todas las opciones anteriores y además:
+
+- **Clientes:** al seleccionar un cliente ve su ficha completa (datos, plan, saldo, equipo, facturas y tickets) y puede **Cambiar estado** del servicio. Solo se ofrecen transiciones válidas.
+- **Personal:** crea cuentas de Técnico, Secretaría, Jefatura o Administrador.
+- **Auditoría:** muestra cada cambio de estado del servicio, quién lo hizo y cuándo.
+
+![Ficha del cliente](evidencias/capturas/M09_detalle_cliente.png)
+
+### Jefatura: supervisión
+
+El **Panel de jefatura** muestra suscriptores activos, facturas pendientes, recaudación del día y del mes, tickets abiertos y equipos con señal crítica. **Cierre diario** muestra la recaudación por método y por día, y el detalle de cada cobro con quién lo registró; se puede **Imprimir**. Todo es de solo lectura.
+
+![Panel de jefatura](evidencias/capturas/M12_panel_jefatura.png)
+
+![Cierre diario](evidencias/capturas/M10_cierre_diario.png)
+
+### Cliente
+
+En **Inicio** ve su saldo pendiente, su plan, el estado de su equipo y sus últimos reportes. En **Mis facturas** consulta su historial. En **Soporte técnico** reporta una falla: el sistema asigna la prioridad y el tiempo máximo de atención. Todo funciona desde el celular.
+
+![Cliente en celular](evidencias/capturas/M14_cliente_celular.png)
+
+### Cambiar la contraseña y cerrar sesión
+
+En **Mi perfil** escriba la contraseña actual, la nueva y la confirmación. La nueva debe tener al menos 8 caracteres, con una mayúscula, una minúscula y un número, y debe ser distinta de la actual. Use **Cerrar sesión** al terminar, sobre todo en equipos compartidos. La sesión expira sola a los 60 minutos.
+
+![Cambio de contraseña](evidencias/capturas/M07_perfil_cambio_password.png)
 
 ### Buenas prácticas de uso seguro
 
@@ -342,7 +390,7 @@ En esta sección, cada control tiene su evidencia real: una captura, código, co
 | Requerimiento | Cómo se cumple | Evidencia |
 |---|---|---|
 | **Autenticación** | Login con contraseña verificada con bcrypt. Se emite un JWT HS256 que expira a los 60 min y se valida su firma en cada solicitud. | `src/common/base.py` (`crear_token`, `usuario_actual`), S01, S02, Anexo A, CP-22 |
-| **Autorización** | `requiere_rol("Tecnico","Administrador")` en cobro, cierre y cambio de estado. El suscriptor solo puede consultar lo propio. | `src/ms_pagos/main.py`, Anexo A (403), S04, CP-23 |
+| **Autorización** | Cinco roles. `requiere_rol(...)` en cada operación sensible (grupos `PERSONAL`, `COBRADORES` y `OPERACION` en `base.py`). El suscriptor solo puede consultar lo propio y Jefatura solo lee. | `src/common/base.py`, `ms_*/main.py`, Anexo A (403), S04, CP-23, CP-40 a CP-42 |
 | **Privacidad** | El hash de la contraseña nunca se devuelve. Un suscriptor no puede ver datos de otro cliente. Las capturas usan datos ficticios. | `obtener_cliente` en `ms_auth/main.py`, Anexo A |
 | **Integridad** | El monto debe coincidir con la factura. La factura se bloquea con `FOR UPDATE`. Hay restricciones `CHECK` y FK, y el trigger cambia el estado. Una factura no se cobra dos veces. | `ms_pagos/main.py`, `01_schema.sql`, Anexo A (409, 422) |
 | **Disponibilidad** | Healthchecks en Docker y `/health`. El pool de conexiones es acotado y devuelve 503 con `Retry-After` si se agota. Container Apps limita las réplicas. | `base.py`, `docker-compose.yml`, `deploy-staging.sh`, E01 |
@@ -351,30 +399,38 @@ En esta sección, cada control tiene su evidencia real: una captura, código, co
 
 **Matriz de roles y permisos (lo que la API aplica realmente):**
 
-| Operación | Suscriptor | Técnico | Administrador |
-|---|---|---|---|
-| Iniciar sesión / cambiar su contraseña | ✔ | ✔ | ✔ |
-| Ver su perfil y sus facturas | ✔ (solo las propias) | ✔ | ✔ |
-| Ver facturas de otro cliente | ✘ 403 | ✔ | ✔ |
-| Registrar cobro | ✘ 403 | ✔ | ✔ |
-| Cierre diario | ✘ 403 | ✔ | ✔ |
-| Cambiar el estado del servicio | ✘ 403 | ✔ | ✔ |
-| Usar el portal de cobro | ✘ bloqueado | ✔ | ✔ |
+| Operación | Cliente | Técnico | Secretaría | Jefatura | Administrador |
+|---|---|---|---|---|---|
+| Iniciar sesión / cambiar su contraseña | ✔ | ✔ | ✔ | ✔ | ✔ |
+| Ver su perfil, facturas, tickets y equipo | ✔ solo lo propio | ✔ | ✔ | ✔ | ✔ |
+| Ver datos de otros clientes | ✘ 403 | ✔ | ✔ | ✔ | ✔ |
+| Registrar cobro | ✘ 403 | ✔ campo | ✔ oficina | ✘ 403 | ✔ |
+| Emitir factura | ✘ 403 | ✘ 403 | ✔ | ✘ 403 | ✔ |
+| Cambiar el estado del servicio | ✘ 403 | ✔ | ✔ | ✘ 403 | ✔ |
+| Operar equipos ONU / tomar y cerrar tickets | ✘ 403 | ✔ | ✘ 403 | ✘ 403 | ✔ |
+| Cierre diario e indicadores | ✘ 403 | ✔ | ✔ | ✔ | ✔ |
+| Auditoría | ✘ 403 | ✘ 403 | ✘ 403 | ✔ | ✔ |
+| Crear cuentas de personal | ✘ 403 | ✘ 403 | ✘ 403 | ✘ 403 | ✔ |
+
+La interfaz muestra a cada rol solo su menú, pero **la decisión la toma siempre la API**: aunque alguien llame al endpoint directamente, recibe 403 (CP-23, CP-40, CP-41, CP-42).
 
 **Diagrama de casos de uso por rol:**
 
 ```mermaid
 flowchart LR
-    S((Suscriptor)) --> UC1[Iniciar sesión]
-    S --> UC2[Consultar sus facturas]
-    S --> UC7[Cambiar contraseña]
-    T((Técnico)) --> UC1
-    T --> UC3[Buscar facturas de un cliente]
-    T --> UC4[Registrar cobro]
-    T --> UC5[Ver cierre diario]
-    T --> UC6[Cambiar estado del servicio]
-    T --> UC7
-    A((Administrador)) --> UC3 & UC4 & UC5 & UC6 & UC7
+    C((Cliente)) --> UC1[Consultar su cuenta y facturas]
+    C --> UC2[Reportar falla]
+    T((Técnico)) --> UC3[Cobrar en campo]
+    T --> UC4[Reactivar servicio]
+    T --> UC5[Atender tickets y equipos]
+    SE((Secretaría)) --> UC6[Registrar suscriptor]
+    SE --> UC7[Emitir factura]
+    SE --> UC8[Cobrar en oficina]
+    SE --> UC2
+    J((Jefatura)) --> UC9[Ver indicadores y cierre]
+    J --> UC10[Revisar auditoría]
+    A((Administrador)) --> UC3 & UC6 & UC7 & UC9 & UC10
+    A --> UC11[Gestionar personal]
 ```
 
 **Límites de confianza:**
@@ -414,7 +470,7 @@ flowchart TB
 |---|---|---|
 | Protección de la información | Contraseñas con bcrypt (cost 10, con sal). Las consultas no devuelven el hash. | Consulta: `hash_bcrypt = $2b$10$…` en los 3 usuarios (Anexo B) |
 | Integridad | `CHECK` sobre estados, roles y montos (`monto_pagado > 0`). `FOREIGN KEY ... ON DELETE RESTRICT` de pagos a facturas. `UNIQUE` en correo, `uuid_sat` y MAC. | `db/init/01_schema.sql`, CP integración (MAC única) |
-| Auditoría | El trigger `trg_auditar_cliente` registra el estado anterior y el nuevo en `auditoria_usuarios` | Anexo B: dos registros reales generados por la API |
+| Auditoría | El trigger `trg_auditar_cliente` registra el estado anterior, el nuevo y el usuario de la aplicación en `auditoria_usuarios`. Cada pago guarda `registrado_por`. | Anexo B, S05, CP-43 |
 | Separación | Un esquema por microservicio. `get_conn` fija `SET LOCAL search_path` solo al esquema del servicio. | `src/common/base.py` |
 | Credenciales | Se leen de variables de entorno o de *secrets*. `.env` está en `.gitignore`. En Azure, la contraseña de PostgreSQL es aleatoria en cada despliegue. | `.gitignore`, `deploy-staging.sh` |
 | Mínimo privilegio | **Pendiente:** los cuatro servicios se conectan con el mismo usuario administrador. Plan: un rol de PostgreSQL por esquema con `GRANT` limitado. | Hallazgo H2 |
@@ -452,7 +508,10 @@ El uso seguro se explica en el manual (sección 6, "Buenas prácticas"). Los con
 | Acceso sin token | S01 y CP-22 | 401 *Token requerido* |
 | Token alterado | Anexo A y CP-22 | 401 *Token inválido* |
 | Suscriptor consulta otro cliente | Anexo A y CP-23 | 403 |
-| Suscriptor intenta cobrar | Anexo A, S04 y CP-23 | 403 en la API y bloqueo en el portal |
+| Suscriptor intenta cobrar o listar clientes | Anexo A, S04, CP-23 y CP-42 | 403; el menú del cliente no ofrece esas opciones |
+| Jefatura intenta cobrar, emitir factura o cambiar estado | CP-40 | 403 (solo lectura) |
+| Secretaría intenta operar la red o ver auditoría | CP-41 | 403 |
+| Auditoría identifica al usuario de la aplicación | CP-43 y S05 | El evento registra el correo del técnico |
 | Inyección SQL | Anexo A y CP-24 | 422, sin ejecutar SQL |
 | Monto alterado | Anexo A | 422 |
 | Cobro duplicado | Anexo A y prueba de sistema | 409 |
@@ -460,7 +519,9 @@ El uso seguro se explica en el manual (sección 6, "Buenas prácticas"). Los con
 
 ![API sin token](evidencias/capturas/S01_api_sin_token_401.png)
 
-![Suscriptor bloqueado en el portal](evidencias/capturas/S04_suscriptor_bloqueado_en_portal.png)
+![El cliente solo ve su cuenta](evidencias/capturas/S04_cliente_solo_su_cuenta.png)
+
+![Auditoría con el usuario de la aplicación](evidencias/capturas/S05_auditoria_usuario_aplicacion.png)
 
 ### 7.7 Hallazgos y plan de mejora (autoevaluación)
 
@@ -469,7 +530,7 @@ El uso seguro se explica en el manual (sección 6, "Buenas prácticas"). Los con
 | H1 | `jwt_secret()` tiene un valor por defecto de desarrollo si falta `JWT_SECRET` | Alto si se despliega sin la variable | Hacer que el servicio no arranque si falta (en Azure ya se inyecta un secreto aleatorio) |
 | H2 | Un único usuario de base de datos con privilegios de administrador para los cuatro servicios | Medio | Un rol de PostgreSQL por esquema con `GRANT` mínimos |
 | H3 | No hay límite de intentos de login ni revocación de JWT tras cambiar la contraseña | Medio | Rate limiting y una lista de revocación o `token_version` |
-| H4 | La auditoría registra el usuario de base de datos (`postgres`), no el usuario de la aplicación. No hay prueba de restauración de respaldos. | Medio | Pasar el usuario con `SET LOCAL app.usuario` y leerlo en el trigger. Probar el *restore*. |
+| H4 | ~~La auditoría registraba el usuario de base de datos (`postgres`)~~ **Corregido:** la API envía el usuario con `set_config('app.usuario', …)` y el trigger lo registra (CP-43). Sigue pendiente probar la restauración de respaldos. | Bajo | Probar el *restore* |
 | H5 | El pipeline no escanea vulnerabilidades. El ACR usa usuario administrador. Los cuatro servicios tienen ingreso externo. | Medio | Agregar `pip-audit` y Trivy, usar identidad administrada y dejar solo ms_pagos y ms_auth con ingreso público |
 | H6 | Los valores de demostración de `.env.example` (`admin123`) | Bajo (solo local) | Reemplazarlos al crear `.env` en cualquier ambiente compartido |
 
@@ -501,8 +562,8 @@ El uso seguro se explica en el manual (sección 6, "Buenas prácticas"). Los con
 
 ### Conclusiones
 
-1. El cobro en campo quedó automatizado de punta a punta dentro del sistema: autenticación, consulta, validación, registro, cambio de estado y recibo. Funciona sobre contenedores con los cuatro servicios sanos.
-2. La seguridad se incorporó en todas las capas: API (JWT, roles, validación), base de datos (restricciones, triggers, consultas parametrizadas), contenedores (usuario sin privilegios) y pipeline (secretos, pruebas automáticas). Además se comprobó con 58 pruebas aprobadas y con ataques de prueba documentados.
+1. El cobro en campo quedó automatizado de punta a punta dentro del sistema: autenticación, consulta, validación, registro, recibo y reactivación del servicio. Alrededor de ese proceso, la aplicación web cubre la operación de los 5 roles de la empresa (cliente, técnico, secretaría, jefatura y administración) y funciona en celular y computadora sobre contenedores con los cuatro servicios sanos.
+2. La seguridad se incorporó en todas las capas: API (JWT, roles, validación), base de datos (restricciones, triggers, consultas parametrizadas), contenedores (usuario sin privilegios) y pipeline (secretos, pruebas automáticas). Además se comprobó con 62 pruebas aprobadas, con ataques de prueba documentados y con permisos verificados para los 5 roles.
 3. La prueba de carga concurrente (CP-26) no cumplió la meta de p95, aunque no hubo errores. Antes de producción hay que ajustar `DB_POOL_MAX_SIZE` y las réplicas y repetir la prueba en el ambiente de Azure.
 4. Quedan pendientes, documentados en 7.7: secreto JWT obligatorio, mínimo privilegio en la base de datos, límite de intentos de login, respaldo probado y escaneo de dependencias. Además, la reconexión física de la ONU y la integración con SAT y con la pasarela bancaria siguen como trabajo futuro: hoy el trigger marca la factura como pagada, pero no actúa sobre la OLT.
 
@@ -530,18 +591,22 @@ Cambio de estado a "Borrado"                        -> HTTP 422 {"detail":"Estad
  hazel.perez@fivercable.com   | Suscriptor | $2b$10$…
  juan.lopez@gmail.com         | Suscriptor | $2b$10$…
  tecnico.campo@fivercable.com | Tecnico    | $2b$10$…
+ admin@fivercable.com         | Administrador | $2b$10$…
+ jefatura@fivercable.com      | Jefatura   | $2b$10$…
+ secretaria@fivercable.com    | Secretaria | $2b$10$…
 
--- Auditoría generada por trg_auditar_cliente tras PATCH /api/clientes/2/estado
- id | id_cliente |         accion         | usuario_operador |    fecha_evento     | detalles
-  1 |          2 | CAMBIO_ESTADO_SERVICIO | postgres         | 2026-10-10 12:04:38 | {"estado_nuevo": "Moroso", "estado_anterior": "Activo"}
-  2 |          2 | CAMBIO_ESTADO_SERVICIO | postgres         | 2026-10-10 12:04:38 | {"estado_nuevo": "Activo", "estado_anterior": "Moroso"}
+-- Auditoría generada por trg_auditar_cliente tras cambios de estado hechos desde la aplicación
+ id | id_cliente |         accion         |       usuario_operador       |      fecha       | detalles
+  1 |          7 | CAMBIO_ESTADO_SERVICIO | tecnico.campo@fivercable.com | 2026-10-10 13:06 | {"estado_nuevo": "Activo", "estado_anterior": "Moroso"}
+  3 |          8 | CAMBIO_ESTADO_SERVICIO | tecnico.campo@fivercable.com | 2026-10-10 13:09 | {"estado_nuevo": "Moroso", "estado_anterior": "Activo"}
+  5 |          8 | CAMBIO_ESTADO_SERVICIO | tecnico.campo@fivercable.com | 2026-10-10 13:10 | {"estado_nuevo": "Activo", "estado_anterior": "Moroso"}
 ```
 
 ### Anexo C. Archivos de evidencia
 
 | Archivo | Contenido |
 |---|---|
-| [evidencias/capturas/](evidencias/capturas/) | Capturas del portal integrado y de la API (E = entorno, M = manual, S = seguridad) |
+| [evidencias/capturas/](evidencias/capturas/) | Capturas de la aplicación web por rol y de la API (E = entorno, M = manual, S = seguridad) |
 | [evidencias/capturas-prototipo/](evidencias/capturas-prototipo/) | Capturas automáticas de Selenium del prototipo (CP-29 a CP-39) |
 | [evidencias/reporte-pruebas.html](evidencias/reporte-pruebas.html) | Reporte de Pytest de la ejecución completa |
 | [evidencias/capturar_evidencias.py](evidencias/capturar_evidencias.py) | Script que regenera las capturas del portal |
@@ -565,9 +630,9 @@ python docs/evidencias/capturar_evidencias.py
 | 0:00–1:00 | Fiver Cable y el proceso de cobro en campo | Integrante 1 | Sección 1 |
 | 1:00–2:00 | El problema: cobro manual, atraso, errores, cobro duplicado | Integrante 1 | Tabla "Antes / Con la solución" |
 | 2:00–3:00 | Solución, arquitectura y tecnologías | Integrante 2 | Diagrama de arquitectura |
-| 3:00–6:00 | **Demostración en vivo:** `docker compose ps` → login → buscar cliente 2 → intento con tarjeta sin autorización (rechazo) → cobro en efectivo → recibo → buscar de nuevo | Integrante 2 | Portal en `:3003/portal` |
+| 3:00–6:00 | **Demostración en vivo:** login de técnico → panel → cobro al cliente 7 (rechazo con tarjeta sin autorización, cobro en efectivo, recibo, reactivar servicio) → panel de jefatura → vista del cliente en celular | Integrante 2 | Portal en `:3003/portal`, ver `guion-demostracion.md` |
 | 6:00–8:00 | Controles de seguridad: API sin token (401), suscriptor (403), monto alterado (422), duplicado (409), auditoría en BD, secretos en el pipeline | Integrante 3 | Anexo A, matriz de roles, límites de confianza |
-| 8:00–9:00 | Pruebas y CI/CD: 58/59, CP-26 y su plan, pipeline Build → Test → Deploy | Integrante 3 | Reporte HTML, `azure-pipelines.yml` |
+| 8:00–9:00 | Pruebas y CI/CD: 62/63, CP-26 y su plan, pipeline Build → Test → Deploy | Integrante 3 | Reporte HTML, `azure-pipelines.yml` |
 | 9:00–10:00 | Resultados, beneficios, pendientes y cierre | Integrante 1 | Secciones 8 y 9 |
 
 Recomendaciones para la exposición:
