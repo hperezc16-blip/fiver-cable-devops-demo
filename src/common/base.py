@@ -24,6 +24,11 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 JWT_ALG = "HS256"
 _pool: ConnectionPool | None = None
 
+# Grupos de roles usados por las dependencias requiere_rol de los microservicios
+PERSONAL = ("Tecnico", "Administrador", "Jefatura", "Secretaria")
+COBRADORES = ("Tecnico", "Administrador", "Secretaria")
+OPERACION = ("Tecnico", "Administrador")
+
 
 def jwt_secret() -> str:
     return os.getenv("JWT_SECRET", "dev-fivercable-cambiar-en-staging-y-produccion-2026")

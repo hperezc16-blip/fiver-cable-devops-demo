@@ -35,8 +35,13 @@ CREATE TABLE IF NOT EXISTS usuarios_db.clientes (
     fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     password_hash VARCHAR(255) NOT NULL,
     rol VARCHAR(20) NOT NULL DEFAULT 'Suscriptor'
-        CHECK (rol IN ('Suscriptor', 'Tecnico', 'Administrador'))
+        CHECK (rol IN ('Suscriptor', 'Tecnico', 'Administrador', 'Jefatura', 'Secretaria'))
 );
+
+-- Roles de oficina (Jefatura, Secretaria) agregados en la entrega final; idempotente para bases existentes
+ALTER TABLE usuarios_db.clientes DROP CONSTRAINT IF EXISTS clientes_rol_check;
+ALTER TABLE usuarios_db.clientes ADD CONSTRAINT clientes_rol_check
+    CHECK (rol IN ('Suscriptor', 'Tecnico', 'Administrador', 'Jefatura', 'Secretaria'));
 
 CREATE TABLE IF NOT EXISTS usuarios_db.auditoria_usuarios (
     id_auditoria SERIAL PRIMARY KEY,
@@ -50,7 +55,7 @@ CREATE TABLE IF NOT EXISTS usuarios_db.auditoria_usuarios (
 CREATE OR REPLACE VIEW usuarios_db.vw_suscriptores_activos AS
 SELECT id_cliente, dpi_nit, nombres, apellidos, correo, telefono, estado_servicio, fecha_registro
 FROM usuarios_db.clientes
-WHERE estado_servicio = 'Activo';
+WHERE estado_servicio = 'Activo' AND rol = 'Suscriptor';
 
 CREATE OR REPLACE FUNCTION usuarios_db.fn_trg_auditar_cliente()
 RETURNS TRIGGER AS $$
@@ -60,7 +65,8 @@ BEGIN
         VALUES (
             NEW.id_cliente,
             'CAMBIO_ESTADO_SERVICIO',
-            CURRENT_USER,
+            -- usuario de la aplicación (SET LOCAL app.usuario); si no existe, el usuario de BD
+            COALESCE(NULLIF(current_setting('app.usuario', true), ''), CURRENT_USER),
             jsonb_build_object('estado_anterior', OLD.estado_servicio, 'estado_nuevo', NEW.estado_servicio)
         );
     END IF;
@@ -140,6 +146,9 @@ CREATE TABLE IF NOT EXISTS billing_db.pagos (
     metodo_pago VARCHAR(30) NOT NULL,
     codigo_autorizacion VARCHAR(50)
 );
+
+-- Trazabilidad: usuario de la aplicación que registró el cobro
+ALTER TABLE billing_db.pagos ADD COLUMN IF NOT EXISTS registrado_por VARCHAR(100);
 
 CREATE OR REPLACE VIEW billing_db.vw_cierre_diario_pagos AS
 SELECT

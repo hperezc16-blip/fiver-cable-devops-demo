@@ -122,11 +122,13 @@ desplegar() {  # $1=servicio $2=puerto $3=variables extra
 AUTH_FQDN=$(desplegar auth 3000 "")
 CAT_FQDN=$(desplegar catalogo 3001 "")
 PED_FQDN=$(desplegar pedidos 3002 "")
-PAG_FQDN=$(desplegar pagos 3003 "AUTH_PUBLIC_URL=https://${AUTH_FQDN}")
+PAG_FQDN=$(desplegar pagos 3003 "AUTH_PUBLIC_URL=https://${AUTH_FQDN} CATALOGO_PUBLIC_URL=https://${CAT_FQDN} PEDIDOS_PUBLIC_URL=https://${PED_FQDN}")
 
-echo "==> Limitar CORS de autenticación al portal de cobro"
-az containerapp update -n ms-auth -g "$RG" \
-  --set-env-vars "CORS_ORIGINS=https://${PAG_FQDN}" -o none
+echo "==> Limitar CORS de los servicios al portal web"
+for svc in auth catalogo pedidos; do
+  az containerapp update -n "ms-${svc}" -g "$RG" \
+    --set-env-vars "CORS_ORIGINS=https://${PAG_FQDN}" -o none
+done
 
 echo "==> Verificación de salud"
 for f in "$AUTH_FQDN" "$CAT_FQDN" "$PED_FQDN" "$PAG_FQDN"; do

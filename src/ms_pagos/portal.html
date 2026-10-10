@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fiver Cable · Cobro en campo</title>
+<title>Fiver Cable · Portal</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%236d28d9%27/%3E%3Ctext x=%2716%27 y=%2723%27 font-size=%2720%27 font-family=%27Arial%27 font-weight=%27bold%27 fill=%27white%27 text-anchor=%27middle%27%3Ef.%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <style>
-:root{--navy:#112c54;--blue:#1264dd;--cyan:#20b7cf;--bg:#f3f6fa;--muted:#718096;--line:#e6ebf2;--green:#087f65;--red:#c0392b}
+:root{--navy:#112c54;--ink:#1d1a2e;--purple:#6d28d9;--purple-d:#5b21b6;--purple-l:#efe7ff;--side:#1f1147;--bg:#f4f2fa;--card:#ffffff;--muted:#6b6880;--line:#e6e1f2;--green:#087f65;--green-l:#e3f6f0;--red:#b42318;--red-l:#fdecea;--amber:#9a5b00;--amber-l:#fff4e0;--blue:#1d5fd1;--blue-l:#e8f0fe}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;padding:24px;background:linear-gradient(130deg,#7129df,#8b43ed 55%,#6221d1);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#172b49}
-button,input,select{font:inherit}button{cursor:pointer}
-.app{width:min(1200px,100%);min-height:calc(100vh - 48px);margin:0 auto;background:var(--bg);border:1px solid #dce4ed;border-radius:8px;box-shadow:0 18px 55px #19375918;display:flex;flex-direction:column;overflow:hidden}
+html,body{margin:0}
+body{min-height:100vh;background:var(--bg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
 .oculto{display:none!important}
-/* ingreso */
+/* ---------- login (diseño del equipo) ---------- */
 body.login-activo{display:grid;min-height:100svh;place-items:center;padding:32px;background:radial-gradient(ellipse at 12% 22%,#b77af4 0%,transparent 36%),linear-gradient(115deg,#7829e7 0%,#8d39f0 52%,#7023dd 100%);overflow-x:hidden}
-body.login-activo .app{width:100%;min-height:0;background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible}
-.login{width:min(1000px,calc(100vw - 64px));height:min(700px,calc(100svh - 64px));min-height:560px;flex:none;margin:auto;display:grid;grid-template-columns:1fr 1fr;gap:0;padding:0;overflow:hidden;border-radius:30px;background:#fff;box-shadow:0 24px 70px #35106458;color:var(--navy)}
+.login{width:min(1000px,calc(100vw - 64px));height:min(700px,calc(100svh - 64px));min-height:560px;margin:auto;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;border-radius:30px;background:#fff;box-shadow:0 24px 70px #35106458;color:var(--navy)}
 .login-brand{position:relative;min-width:0;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:28px;background:#f5f0ff}
 .login-brand:before{content:"";position:absolute;inset:-17% -14% 37% -17%;background:linear-gradient(145deg,#d3b4ff 0%,#a367f2 52%,#782ce5 100%);border-radius:0 0 51% 19% / 0 0 25% 12%;transform:rotate(-3deg)}
 .login-brand:after{content:"";position:absolute;width:54%;height:24%;right:-16%;bottom:-9%;border-radius:50% 0 0 0;background:#e9ddff;transform:rotate(-16deg)}
@@ -26,121 +26,146 @@ body.login-activo .app{width:100%;min-height:0;background:transparent;border:0;b
 .support-icon:nth-child(2){background:#e5f8f2;color:#087f65}
 .support-icon:nth-child(3){background:#fff4d9;color:#aa7011}
 .support-icon:nth-child(4){background:#e9e0ff;color:#5720ac}
-.support-icon i{line-height:1}
 .avatar-cluster{height:66px;display:flex;align-items:center;justify-content:center;margin:0 auto 9px}
 .avatar{width:49px;height:49px;display:grid;place-items:center;overflow:hidden;border:3px solid #fff;border-radius:50%;background:#6222c5;box-shadow:0 4px 12px #33215230}
 .avatar+.avatar{margin-left:-12px;transform:translateY(-7px)}
 .avatar i{color:#fff;font-size:19px}
 .login-content{width:100%;max-width:500px;margin:0 auto;padding:34px 56px;display:flex;flex-direction:column;justify-content:center}
 .login-content h1{margin:0 0 24px;color:#55505f;font-size:28px;font-weight:600;line-height:1.2;text-align:center}
-.login-content>p{margin:0 0 22px;color:var(--muted)}
-.login-content .eyebrow{display:none}
 .login-content form{display:flex;flex-direction:column;align-items:stretch}
-.input-wrap{position:relative;display:flex;align-items:center;height:52px;border-bottom:1px solid #8d8b93;transition:border-color .18s,border-width .18s}
+.input-wrap{position:relative;display:flex;align-items:center;height:52px;border-bottom:1px solid #8d8b93;transition:border-color .18s}
 .input-wrap:focus-within{border-bottom:2px solid #7022d1}
 .input-wrap>svg{flex:none;width:18px;height:18px;margin:0 12px 0 1px;color:#8525df;pointer-events:none}
 .input-wrap.password-wrap>svg{color:#92969d}
 .input-wrap .input{height:100%;padding:8px 4px;border:0;border-radius:0;background:transparent;box-shadow:none;font-size:15px}
-.input-wrap .input::placeholder{color:#9b9ba2}
 .login-content .field{margin:21px 0 4px;color:#77727e;font-size:13px;font-weight:600}
-.account-help{align-self:flex-end;margin-top:9px;padding:5px 0;border:0;background:transparent;color:#655b71;font-size:12px;text-align:right;text-decoration:underline;text-underline-offset:2px}
-.payment-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.payment-heading h2{margin:5px 0 15px}
-.password-toggle{flex:none;margin-bottom:10px;padding:7px 9px;font-size:11px}
-.change-password-panel{max-width:760px}
-.btn-login{display:block;width:min(220px,100%);min-height:46px;align-self:center;margin-top:18px;border:0;border-radius:999px;background:#7021d4;color:#fff;font-size:15px;font-weight:700;box-shadow:0 5px 12px #7021d42c;transition:background .18s,transform .18s}
-.btn-login:hover{background:#5e18bd;transform:translateY(-1px)}
-.btn-login:disabled{cursor:wait;opacity:.72;transform:none}
-.login-note{margin:16px 0 0;color:#99949e;font-size:10px;text-align:center}
+.account-help{align-self:flex-end;margin-top:9px;padding:5px 0;border:0;background:transparent;color:#655b71;font-size:12px;text-decoration:underline;text-underline-offset:2px}
+.btn-login{display:block;width:min(220px,100%);min-height:46px;align-self:center;margin-top:18px;border:0;border-radius:999px;background:#7021d4;color:#fff;font-size:15px;font-weight:700;box-shadow:0 5px 12px #7021d42c}
+.btn-login:hover{background:#5e18bd}
+.btn-login:disabled{cursor:wait;opacity:.72}
+.demo-cuentas{margin-top:18px;font-size:12px;color:#77727e;text-align:center}
 @keyframes art-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-.eyebrow{font-size:11px;letter-spacing:1px;text-transform:uppercase;font-weight:800;color:var(--muted)}
-.field{display:block;font-size:12px;font-weight:800;margin:15px 0 7px}
-.input{display:block;width:100%;border:1px solid #d7e0eb;border-radius:12px;background:#fff;padding:12px 13px;color:#172b49;outline:none}
-.input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #1264dd1c}
-.btn{border:0;border-radius:13px;padding:13px 16px;background:var(--blue);color:#fff;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:7px}
-.btn.full{width:100%;margin-top:18px}
-.btn.cobrar{padding:9px 14px;background:var(--green)}
-/* cobro */
-.header{height:63px;flex:none;background:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
-.header-left{display:flex;align-items:center;gap:10px}
-.header-right{display:flex;align-items:center;gap:16px}
-.btn-logout{border:1px solid var(--line);border-radius:8px;background:#fff;padding:8px 12px;color:var(--navy);font-weight:700}
-.btn-logout:hover{background:#f3f6fa}
-.mark{font-weight:900;color:var(--blue);letter-spacing:-1px;font-size:20px}
-.usuario{font-size:12px;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.view{flex:1;width:100%;max-width:1040px;margin:0 auto;padding:32px 40px 44px}
-.view h2{margin:5px 0 15px}
-.card{background:#fff;border:1px solid var(--line);border-radius:19px;padding:17px;margin-bottom:13px;box-shadow:0 5px 20px #112c5408}
-.view>.card,.view>.notice,.view>#cobro-msg{max-width:760px}
-#lista-facturas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
-.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.pill{display:inline-flex;padding:5px 9px;border-radius:99px;font-size:11px;font-weight:800;background:#fff3df;color:#ae6a05}
-.pill.ok{background:#e9f6f2;color:var(--green)}
-.monto{font-size:20px;font-weight:850;letter-spacing:-.5px}
-.muted{color:var(--muted)}.small{font-size:12px}
-.notice{background:#eaf5ff;color:#245681;border-radius:12px;padding:12px;font-size:12px;margin:12px 0}
-.msg{padding:12px;border-radius:12px;margin-top:12px;font-size:13px}
-.msg.ok{background:#e4f7f1;color:var(--green)}
-.msg.err{background:#fdecea;color:var(--red)}
-.msg.info{background:#eaf5ff;color:#245681}
-.section{margin:22px 2px 11px;font-weight:800;font-size:16px}
-@media(max-width:800px){
-  body{padding:0;background:var(--bg)}
-  .app{width:100%;min-height:100vh;border:0;border-radius:0;box-shadow:none}
-  .view{padding:24px 24px 36px}
-}
-@media(max-width:520px){
-  .header{padding:12px 16px}
-  .header-right{gap:8px}
-  .usuario{max-width:110px}
-  .btn-logout{padding:7px 9px;font-size:12px}
-  .view{padding:20px 16px 30px}
-  #lista-facturas{grid-template-columns:1fr}
-}
 @media(max-width:620px){
-  body.login-activo{min-height:100svh;padding:16px;overflow-y:auto}
-  body.login-activo .app{min-height:calc(100svh - 32px)}
-  body.login-activo .login{width:100%;height:auto;min-height:0;grid-template-columns:1fr;grid-template-rows:210px auto;border-radius:24px}
+  body.login-activo{padding:16px;overflow-y:auto}
+  .login{width:100%;height:auto;min-height:0;grid-template-columns:1fr;grid-template-rows:200px auto;border-radius:24px}
   .login-brand{padding:10px;background:#f7f3ff}
-  .login-brand:before{inset:-44% -12% 50% -18%;border-radius:0 0 48% 22% / 0 0 28% 12%}
+  .login-brand:before{inset:-44% -12% 50% -18%}
   .login-brand:after{display:none}
   .support-visual{width:min(100%,310px);gap:8px}
-  .support-illustration{width:40%;max-height:100%}
-  .support-icons{width:34%;grid-template-columns:repeat(2,minmax(36px,1fr));gap:8px}
-  .support-icon{font-size:18px}
-  .login-content{max-width:440px;padding:28px clamp(22px,8vw,40px) 34px}
-  .avatar-cluster{height:55px;margin-bottom:7px}
-  .avatar{width:43px;height:43px}
-}
-@media(max-width:380px){
-  body.login-activo .login{grid-template-rows:185px auto}
-  .support-visual{width:100%}
   .support-illustration{width:40%}
-  .support-icons{grid-template-columns:repeat(2,minmax(32px,1fr));gap:6px}
-  .support-icon{font-size:16px}
-  .login-content{padding:22px 20px 28px}
+  .support-icons{width:34%;grid-template-columns:repeat(2,minmax(34px,1fr));gap:8px}
+  .support-icon{font-size:17px}
+  .login-content{padding:24px clamp(20px,7vw,40px) 30px}
 }
-@media(max-height:620px) and (min-width:621px){
-  body.login-activo{padding:16px}
-  .login{height:calc(100svh - 32px);min-height:300px}
-  .login-content{padding:10px 24px}
-  .avatar-cluster{height:35px;margin-bottom:0}
-  .avatar{width:32px;height:32px;border-width:2px}
-  .login-content h1{margin-bottom:8px;font-size:19px}
-  .input-wrap{height:36px}
-  .input-wrap>svg{width:15px;height:15px;margin-right:8px}
-  .login-content .field{margin-top:8px}
-  .account-help{margin-top:4px}
-  .btn-login{min-height:34px;margin-top:10px}
+/* ---------- aplicación ---------- */
+.shell{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--side);color:#e8e2fb;display:flex;flex-direction:column;padding:22px 14px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 22px}
+.brand-mark{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:#fff;color:var(--purple);font-weight:900;font-size:20px;letter-spacing:-1px}
+.brand b{display:block;font-size:16px;color:#fff}.brand small{color:#b9adde;font-size:12px}
+.nav{display:flex;flex-direction:column;gap:3px}
+.nav button{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:10px;background:transparent;color:#d9d0f5;text-align:left;font-weight:600}
+.nav button i{width:20px;text-align:center;color:#b49df0}
+.nav button:hover{background:#ffffff12}
+.nav button.activo{background:var(--purple);color:#fff}.nav button.activo i{color:#fff}
+.side-foot{margin-top:auto;padding:14px 10px 0;border-top:1px solid #ffffff1c;font-size:12px;color:#b9adde}
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:14px;height:66px;padding:0 28px;background:#fffffff2;backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.topbar h1{margin:0;font-size:19px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.menu-btn{display:none;border:1px solid var(--line);background:#fff;border-radius:10px;width:42px;height:42px}
+.user-chip{display:flex;align-items:center;gap:10px;min-width:0}
+.user-chip .who{display:flex;flex-direction:column;line-height:1.2;min-width:0;text-align:right}
+.user-chip .who b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.role{display:inline-block;padding:2px 8px;border-radius:99px;background:var(--purple-l);color:var(--purple-d);font-size:11px;font-weight:800;align-self:flex-end}
+.btn-logout{border:1px solid var(--line);border-radius:10px;background:#fff;padding:9px 12px;color:var(--ink);font-weight:700;white-space:nowrap}
+.btn-logout:hover{background:var(--bg)}
+.vista{width:100%;max-width:1240px;margin:0 auto;padding:28px}
+.velo{display:none}
+/* componentes */
+.eyebrow{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;font-weight:800;color:var(--purple)}
+.vista h2{margin:4px 0 18px;font-size:24px}
+.vista h3{margin:0 0 12px;font-size:17px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+.kpis{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,215px),1fr));margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;gap:14px;align-items:center}
+.kpi .ico{width:46px;height:46px;flex:none;border-radius:13px;display:grid;place-items:center;background:var(--purple-l);color:var(--purple);font-size:19px}
+.kpi.verde .ico{background:var(--green-l);color:var(--green)}.kpi.ambar .ico{background:var(--amber-l);color:var(--amber)}.kpi.rojo .ico{background:var(--red-l);color:var(--red)}.kpi.azul .ico{background:var(--blue-l);color:var(--blue)}
+.kpi b{display:block;font-size:22px;line-height:1.15;white-space:nowrap}.kpi span{font-size:13px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;min-width:0}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.card-head h3{margin:0}
+.field{display:block;font-size:13px;font-weight:700;margin:14px 0 6px;color:#3b3650}
+.input{display:block;width:100%;border:1px solid #d9d2ea;border-radius:11px;background:#fff;padding:11px 12px;color:var(--ink);outline:none}
+.input:focus{border-color:var(--purple);box-shadow:0 0 0 3px #6d28d91f}
+.form-row{display:grid;gap:0 14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))}
+.btn{border:0;border-radius:11px;padding:11px 16px;background:var(--purple);color:#fff;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{background:var(--purple-d)}.btn:disabled{opacity:.6;cursor:wait}
+.btn.sec{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.sec:hover{background:var(--bg)}
+.btn.verde{background:var(--green)}.btn.verde:hover{background:#066a54}
+.btn.sm{padding:7px 11px;font-size:13px;border-radius:9px}
+.btn.full{width:100%;margin-top:18px}
+.acciones{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:800;background:var(--amber-l);color:var(--amber);white-space:nowrap}
+.pill.ok{background:var(--green-l);color:var(--green)}.pill.mal{background:var(--red-l);color:var(--red)}.pill.info{background:var(--blue-l);color:var(--blue)}.pill.neutro{background:#eeecf3;color:#4b4760}
+.muted{color:var(--muted)}.small{font-size:13px}.right{text-align:right}
+.notice{background:var(--blue-l);color:#1f4b8f;border-radius:12px;padding:12px 14px;font-size:13px;margin:12px 0}
+.msg{padding:12px 14px;border-radius:12px;margin-top:12px;font-size:14px}
+.msg.ok{background:var(--green-l);color:var(--green)}.msg.err{background:var(--red-l);color:var(--red)}.msg.info{background:var(--blue-l);color:#1f4b8f}
+.dato{display:flex;flex-direction:column;gap:2px;padding:10px 0;border-bottom:1px solid var(--line)}
+.dato:last-child{border-bottom:0}.dato span{font-size:12px;color:var(--muted)}.dato b{font-weight:600}
+.monto{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.lista-facturas{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr))}
+.fact{border:1px solid var(--line);border-radius:14px;padding:16px;background:#fff;display:flex;flex-direction:column;gap:10px}
+.recibo{border:2px dashed #b9a6ec;background:#fbf9ff;border-radius:16px;padding:20px}
+.recibo .num{font-family:ui-monospace,Consolas,monospace;font-size:18px;font-weight:800;color:var(--purple-d)}
+.tabla-wrap{overflow-x:auto}
+table.tabla{width:100%;border-collapse:collapse;font-size:14px}
+.tabla th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tabla td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tabla tr:last-child td{border-bottom:0}
+.tabla td.right{white-space:nowrap}
+.tabla tr.clic{cursor:pointer}.tabla tr.clic:hover td{background:#faf8ff}
+.vacio{padding:26px;text-align:center;color:var(--muted)}
+.barras{display:flex;flex-direction:column;gap:10px}
+.barra{display:grid;grid-template-columns:110px 1fr 110px;gap:10px;align-items:center;font-size:13px}
+.barra .track{height:14px;background:#efeaf8;border-radius:99px;overflow:hidden}
+.barra .fill{height:100%;background:linear-gradient(90deg,#8b5cf6,#6d28d9);border-radius:99px}
+.toast{position:fixed;right:20px;bottom:20px;z-index:50;max-width:min(420px,calc(100vw - 40px));padding:13px 16px;border-radius:12px;background:var(--side);color:#fff;box-shadow:0 12px 30px #1f114750;font-size:14px}
+.toast.err{background:var(--red)}
+.cargando{padding:30px;text-align:center;color:var(--muted)}
+.planes{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))}
+.plan{border:1px solid var(--line);border-radius:16px;padding:22px;background:#fff}
+.plan.actual{border:2px solid var(--purple)}
+.plan .precio{font-size:28px;font-weight:800;margin:8px 0}
+.hero{background:linear-gradient(120deg,#2a1466,#6d28d9);color:#fff;border-radius:18px;padding:24px;margin-bottom:18px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+.hero h2{margin:2px 0 6px;color:#fff}.hero p{margin:0;color:#e3d9ff}
+.hero .eyebrow{color:#d6c7ff}
+@media print{.sidebar,.topbar,.no-print{display:none!important}.shell{display:block}.vista{padding:0}.card{border:0}}
+@media(max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:270px;z-index:30;transform:translateX(-100%);transition:transform .22s}
+  body.menu-abierto .sidebar{transform:none}
+  body.menu-abierto .velo{display:block;position:fixed;inset:0;background:#1f114766;z-index:20}
+  .menu-btn{display:grid;place-items:center}
+  .topbar{padding:0 14px;gap:10px}
+  .user-chip .who{display:none}
+  .vista{padding:18px 14px 30px}
 }
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+@media(max-width:640px){
+  .tabla thead{display:none}
+  .tabla,.tabla tbody,.tabla tr,.tabla td{display:block;width:100%}
+  .tabla tr{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;padding:6px 4px;background:#fff}
+  .tabla td{border:0;padding:6px 10px;display:flex;justify-content:space-between;gap:12px;text-align:right}
+  .tabla td::before{content:attr(data-label);font-weight:700;color:var(--muted);font-size:12px;text-align:left}
+  .barra{grid-template-columns:80px 1fr 90px}
+  .btn-logout span{display:none}
 }
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body class="login-activo">
-<div class="app">
-
   <section class="login" id="seccion-login">
     <div class="login-brand">
       <div class="support-visual" aria-hidden="true">
@@ -198,186 +223,790 @@ body.login-activo .app{width:100%;min-height:0;background:transparent;border:0;b
     </div>
   </section>
 
-  <section id="seccion-cobro" class="oculto" style="display:flex;flex-direction:column;flex:1">
-    <div class="header">
-      <div class="header-left"><span class="mark">f.</span><strong>Cobro en campo</strong></div>
-      <div class="header-right">
-        <span class="usuario" id="usuario"></span>
-        <button id="btn-logout" class="btn-logout" type="button">Cerrar sesión</button>
+<div id="app" class="shell oculto">
+  <aside class="sidebar" aria-label="Menú principal">
+    <div class="brand"><span class="brand-mark">f.</span><div><b>Fiver Cable</b><small>Portal de operaciones</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">Internet y TV por fibra óptica<br>Seminario de TI 2026 · UMG</div>
+  </aside>
+  <div class="velo" id="velo"></div>
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Abrir menú"><i class="fa-solid fa-bars"></i></button>
+      <h1 id="titulo-vista">Inicio</h1>
+      <div class="user-chip">
+        <div class="who"><b id="usuario"></b><span class="role" id="rol-usuario"></span></div>
+        <button id="btn-logout" class="btn-logout" type="button"><i class="fa-solid fa-right-from-bracket"></i> <span>Cerrar sesión</span></button>
       </div>
-    </div>
-    <div class="view">
-      <div class="eyebrow">Cobro digital</div>
-      <div class="payment-heading">
-        <h2>Registrar pago</h2>
-        <button id="btn-toggle-password" class="btn-logout password-toggle" type="button" aria-expanded="false">Cambiar contraseña</button>
-      </div>
-      <form id="change-password-form" class="card change-password-panel oculto">
-        <div class="eyebrow">SEGURIDAD DE LA CUENTA</div>
-        <label class="field" for="password-actual">Contraseña actual</label>
-        <input id="password-actual" class="input" type="password" autocomplete="current-password" required>
-        <label class="field" for="password-nueva">Nueva contraseña</label>
-        <input id="password-nueva" class="input" type="password" autocomplete="new-password" minlength="8" required>
-        <label class="field" for="password-confirmacion">Confirmar nueva contraseña</label>
-        <input id="password-confirmacion" class="input" type="password" autocomplete="new-password" minlength="8" required>
-        <button id="btn-guardar-password" class="btn full" type="submit">Actualizar contraseña</button>
-        <div id="password-msg" aria-live="polite"></div>
-      </form>
-      <div class="card">
-        <label class="field" for="id-cliente" style="margin-top:0">Código de cliente</label>
-        <input id="id-cliente" class="input" type="number" min="1" placeholder="Ejemplo: 1">
-        <label class="field" for="metodo">Método de pago</label>
-        <select id="metodo" class="input">
-          <option value="Efectivo">Efectivo</option>
-          <option value="Tarjeta">Tarjeta</option>
-          <option value="Transferencia">Transferencia</option>
-        </select>
-        <label class="field" for="autorizacion">Código de autorización</label>
-        <input id="autorizacion" class="input" type="text" placeholder="Solo para tarjeta o transferencia">
-        <button id="btn-buscar" class="btn full">Buscar facturas</button>
-      </div>
-      <div class="notice">El cobro liquida la factura completa. El sistema genera el número de transacción del recibo.</div>
-      <div id="cobro-msg"></div>
-      <div id="tabla-facturas" class="oculto">
-        <div class="section">Facturas del cliente</div>
-        <div id="lista-facturas"></div>
-      </div>
-    </div>
-  </section>
-
+    </header>
+    <main class="vista" id="vista"></main>
+  </div>
 </div>
-<script>
-const AUTH_URL = "__AUTH_URL__";
-let token = null;
-const $ = (id) => document.getElementById(id);
-const escapar = (s) => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function mensaje(id, texto, ok) { $(id).innerHTML = `<div class="msg ${ok ? "ok" : "err"}">${texto}</div>`; }
-function mensajeInfo(id, texto) { $(id).innerHTML = `<div class="msg info">${escapar(texto)}</div>`; }
+<div id="toast" class="toast oculto" role="status" aria-live="polite"></div>
 
+<script>
+const URLS = { auth: "__AUTH_URL__", cat: "__CATALOGO_URL__", ped: "__PEDIDOS_URL__", pag: "" };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const num = (v) => Number(v) || 0;
+const q = (n) => "Q " + num(n).toLocaleString("es-GT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fecha = (s) => s ? new Date(s).toLocaleDateString("es-GT", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+const fechaHora = (s) => s ? new Date(s).toLocaleString("es-GT", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
+
+// El token vive solo en memoria: al recargar la página se pide iniciar sesión otra vez
+let S = null;
+let cacheNombres = null;
+let cachePlanes = null;
+
+const NOMBRE_ROL = { Suscriptor: "Cliente", Tecnico: "Técnico", Administrador: "Administrador", Jefatura: "Jefatura", Secretaria: "Secretaría" };
+const VISTAS = {
+  inicio: { t: "Inicio", i: "fa-house" },
+  cobro: { t: "Cobro en campo", i: "fa-cash-register" },
+  clientes: { t: "Clientes", i: "fa-users" },
+  facturacion: { t: "Facturación", i: "fa-file-invoice-dollar" },
+  cierre: { t: "Cierre diario", i: "fa-chart-column" },
+  red: { t: "Red y equipos", i: "fa-wifi" },
+  tickets: { t: "Tickets de soporte", i: "fa-headset" },
+  usuarios: { t: "Personal", i: "fa-user-shield" },
+  auditoria: { t: "Auditoría", i: "fa-clipboard-list" },
+  misfacturas: { t: "Mis facturas", i: "fa-file-invoice" },
+  soporte: { t: "Soporte técnico", i: "fa-headset" },
+  planes: { t: "Planes", i: "fa-layer-group" },
+  perfil: { t: "Mi perfil", i: "fa-user" },
+};
+const MENU = {
+  Suscriptor: ["inicio", "misfacturas", "soporte", "planes", "perfil"],
+  Tecnico: ["inicio", "cobro", "clientes", "tickets", "red", "perfil"],
+  Administrador: ["inicio", "cobro", "clientes", "facturacion", "cierre", "red", "tickets", "usuarios", "auditoria", "perfil"],
+  Jefatura: ["inicio", "cierre", "clientes", "tickets", "red", "auditoria", "perfil"],
+  Secretaria: ["inicio", "clientes", "cobro", "facturacion", "tickets", "cierre", "perfil"],
+};
+// Espejo de los permisos que aplica la API (la API es quien decide; la interfaz solo oculta opciones)
+const PUEDE = {
+  cobrar: ["Tecnico", "Administrador", "Secretaria"],
+  estado: ["Tecnico", "Administrador", "Secretaria"],
+  emitir: ["Administrador", "Secretaria"],
+  operar: ["Tecnico", "Administrador"],
+  crearTicket: ["Tecnico", "Administrador", "Secretaria"],
+  registrar: ["Administrador", "Secretaria"],
+};
+const puede = (accion) => S && PUEDE[accion].includes(S.rol);
+const TRANSICIONES = { Activo: ["Moroso", "Suspendido", "Inactivo"], Moroso: ["Activo", "Suspendido"], Suspendido: ["Activo", "Inactivo"], Inactivo: ["Activo"] };
+
+class ErrorApi extends Error { constructor(m, status) { super(m); this.status = status; } }
+
+async function api(serv, ruta, { method = "GET", body } = {}) {
+  const headers = {};
+  if (body) headers["Content-Type"] = "application/json";
+  if (S) headers.Authorization = `Bearer ${S.token}`;
+  let r;
+  try {
+    r = await fetch(URLS[serv] + ruta, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  } catch (e) {
+    throw new ErrorApi("No se pudo conectar con el servicio. Verifique que los contenedores estén activos.", 0);
+  }
+  let d = null;
+  try { d = await r.json(); } catch (e) { d = null; }
+  if (r.status === 401 && S && !ruta.startsWith("/api/auth/")) {
+    cerrarSesion("Su sesión expiró. Ingrese nuevamente.");
+    throw new ErrorApi("Sesión expirada", 401);
+  }
+  if (!r.ok) {
+    let m = d && d.detail;
+    if (Array.isArray(m)) m = "Datos inválidos: " + m.map(e => (e.loc || []).slice(-1)[0] + " " + e.msg).join("; ");
+    throw new ErrorApi(m || "No se pudo completar la operación", r.status);
+  }
+  return d;
+}
+
+function toast(texto, error) {
+  const t = $("toast");
+  t.className = "toast" + (error ? " err" : "");
+  t.textContent = texto;
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => t.classList.add("oculto"), 4200);
+}
+function mensaje(id, texto, tipo) { const e = $(id); if (e) e.innerHTML = `<div class="msg ${tipo}">${texto}</div>`; }
+
+function pill(estado) {
+  const e = String(estado ?? "");
+  const ok = ["Activo", "Pagado", "Online", "Cerrado", "Resuelto", "Normal"];
+  const mal = ["Suspendido", "Inactivo", "Anulado", "Offline", "Critica", "Critica_Baja", "Critica_Alta", "Alta"];
+  const info = ["Abierto", "Baja", "Sin_Lectura"];
+  const neutro = ["Tecnico", "Administrador", "Jefatura", "Secretaria", "Suscriptor"];
+  const cls = ok.includes(e) ? "ok" : mal.includes(e) ? "mal" : info.includes(e) ? "info" : neutro.includes(e) ? "neutro" : "";
+  const texto = NOMBRE_ROL[e] && neutro.includes(e) ? NOMBRE_ROL[e] : e.replace(/_/g, " ");
+  return `<span class="pill ${cls}">${esc(texto)}</span>`;
+}
+
+function tabla(columnas, filas, { vacio = "Sin registros", clic } = {}) {
+  if (!filas || !filas.length) return `<div class="vacio">${esc(vacio)}</div>`;
+  const head = columnas.map(c => `<th class="${c.cls || ""}">${esc(c.h)}</th>`).join("");
+  const body = filas.map(f => `<tr${clic ? ` class="clic" onclick="${clic(f)}"` : ""}>` +
+    columnas.map(c => `<td class="${c.cls || ""}" data-label="${esc(c.h)}">${c.f(f)}</td>`).join("") + "</tr>").join("");
+  return `<div class="tabla-wrap"><table class="tabla"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+async function nombres() {
+  if (cacheNombres) return cacheNombres;
+  const lista = await api("auth", "/api/clientes");
+  cacheNombres = Object.fromEntries(lista.map(c => [c.id_cliente, `${c.nombres} ${c.apellidos}`]));
+  return cacheNombres;
+}
+const nombreDe = (mapa, id) => mapa && mapa[id] ? `${esc(mapa[id])} <span class="muted small">#${num(id)}</span>` : `Cliente #${num(id)}`;
+
+async function planes() {
+  if (!cachePlanes) cachePlanes = await api("cat", "/api/planes");
+  return cachePlanes;
+}
+
+// ------------------------------------------------------------------ sesión
 $("login-form").onsubmit = async (event) => {
   event.preventDefault();
-  const botonLogin = $("btn-login");
-  botonLogin.disabled = true;
-  botonLogin.textContent = "Ingresando...";
+  const boton = $("btn-login");
+  boton.disabled = true; boton.textContent = "Ingresando...";
   try {
     if (location.protocol === "file:") {
-      return mensaje("login-msg", "Para iniciar sesión, levanta Docker y abre el portal en http://localhost:3003/portal; la vista como archivo solo permite revisar el diseño.", false);
+      return mensaje("login-msg", "Abra la aplicación en http://localhost:3003/portal con los contenedores activos.", "err");
     }
-    const r = await fetch(`${AUTH_URL}/api/auth/login`, { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ correo: $("correo").value, password: $("password").value }) });
-    const d = await r.json();
-    if (!r.ok) return mensaje("login-msg", escapar(d.detail || "No se pudo ingresar"), false);
-    if (d.rol === "Suscriptor") return mensaje("login-msg", "Solo personal técnico puede cobrar en campo", false);
-    token = d.access_token;
-    $("usuario").textContent = $("correo").value;
-    document.body.classList.remove("login-activo");
-    $("seccion-login").classList.add("oculto");
-    $("seccion-cobro").classList.remove("oculto");
-  } catch (e) { mensaje("login-msg", "No se pudo conectar con autenticación. Verifica que el portal y ms_auth estén activos.", false); }
-  finally { botonLogin.disabled = false; botonLogin.textContent = "Iniciar sesión"; }
-};
-
-$("btn-recuperar-password").onclick = () => {
-  mensajeInfo("login-msg", "Para restablecer tu contraseña, solicita ayuda a Administración. La recuperación automática por correo aún no está configurada.");
-};
-
-$("btn-toggle-password").onclick = () => {
-  const panel = $("change-password-form");
-  panel.classList.toggle("oculto");
-  const visible = !panel.classList.contains("oculto");
-  $("btn-toggle-password").setAttribute("aria-expanded", String(visible));
-  if (visible) $("password-actual").focus();
-};
-
-$("change-password-form").onsubmit = async (event) => {
-  event.preventDefault();
-  const nueva = $("password-nueva").value;
-  const confirmar = $("password-confirmacion").value;
-  if (nueva !== confirmar) {
-    return mensaje("password-msg", "La confirmación no coincide con la contraseña nueva.", false);
-  }
-
-  const botonGuardar = $("btn-guardar-password");
-  botonGuardar.disabled = true;
-  botonGuardar.textContent = "Actualizando...";
-  try {
-    const respuesta = await fetch(`${AUTH_URL}/api/auth/cambiar-password`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        password_actual: $("password-actual").value,
-        password_nueva: nueva,
-      }),
-    });
-    const datos = await respuesta.json();
-    if (!respuesta.ok) {
-      return mensaje("password-msg", escapar(datos.detail || "No se pudo actualizar la contraseña"), false);
-    }
-    $("change-password-form").reset();
-    mensaje("password-msg", "Contraseña actualizada correctamente.", true);
+    const d = await api("auth", "/api/auth/login", { method: "POST", body: { correo: $("correo").value, password: $("password").value } });
+    S = { token: d.access_token, rol: d.rol, id: d.id_cliente, correo: $("correo").value.toLowerCase(), nombre: $("correo").value };
+    try {
+      const p = await api("auth", `/api/clientes/${num(d.id_cliente)}`);
+      S.nombre = `${p.nombres} ${p.apellidos}`; S.perfil = p;
+    } catch (e) { /* el nombre es opcional */ }
+    $("password").value = "";
+    $("login-msg").innerHTML = "";
+    iniciarApp();
   } catch (e) {
-    mensaje("password-msg", "No se pudo conectar con autenticación. Verifica que ms_auth esté activo.", false);
+    mensaje("login-msg", esc(e.message), "err");
   } finally {
-    botonGuardar.disabled = false;
-    botonGuardar.textContent = "Actualizar contraseña";
+    boton.disabled = false; boton.textContent = "Iniciar Sesión";
   }
 };
+$("btn-recuperar-password").onclick = () => mensaje("login-msg", "Para restablecer su contraseña, solicite ayuda a Administración.", "info");
 
-$("btn-logout").onclick = () => {
-  token = null;
-  $("correo").value = "";
-  $("password").value = "";
-  $("usuario").textContent = "";
-  $("login-msg").replaceChildren();
-  $("change-password-form").reset();
-  $("change-password-form").classList.add("oculto");
-  $("btn-toggle-password").setAttribute("aria-expanded", "false");
-  $("password-msg").replaceChildren();
-  $("cobro-msg").replaceChildren();
-  $("lista-facturas").replaceChildren();
-  $("tabla-facturas").classList.add("oculto");
-  $("seccion-cobro").classList.add("oculto");
+function iniciarApp() {
+  document.body.classList.remove("login-activo");
+  $("seccion-login").classList.add("oculto");
+  $("app").classList.remove("oculto");
+  $("usuario").textContent = S.nombre;
+  $("rol-usuario").textContent = NOMBRE_ROL[S.rol] || S.rol;
+  $("nav").innerHTML = MENU[S.rol].map(v => {
+    const titulo = v === "cobro" && S.rol === "Secretaria" ? "Pago en oficina" : VISTAS[v].t;
+    return `<button type="button" data-vista="${v}" id="nav-${v}"><i class="fa-solid ${VISTAS[v].i}"></i>${esc(titulo)}</button>`;
+  }).join("");
+  document.querySelectorAll("#nav button").forEach(b => b.onclick = () => ir(b.dataset.vista));
+  ir("inicio");
+}
+
+function cerrarSesion(aviso) {
+  S = null; cacheNombres = null;
+  $("vista").innerHTML = "";
+  $("app").classList.add("oculto");
   $("seccion-login").classList.remove("oculto");
   document.body.classList.add("login-activo");
+  document.body.classList.remove("menu-abierto");
+  if (aviso) mensaje("login-msg", esc(aviso), "info"); else $("login-msg").innerHTML = "";
   $("correo").focus();
+}
+$("btn-logout").onclick = () => cerrarSesion();
+$("menu-btn").onclick = () => document.body.classList.toggle("menu-abierto");
+$("velo").onclick = () => document.body.classList.remove("menu-abierto");
+
+const RENDER = {};
+async function ir(vista, params = {}) {
+  if (!S || !MENU[S.rol].includes(vista)) return;
+  document.body.classList.remove("menu-abierto");
+  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("activo", b.dataset.vista === vista));
+  $("titulo-vista").textContent = vista === "cobro" && S.rol === "Secretaria" ? "Pago en oficina" : VISTAS[vista].t;
+  $("vista").innerHTML = `<div class="cargando"><i class="fa-solid fa-spinner fa-spin"></i> Cargando…</div>`;
+  window.scrollTo(0, 0);
+  try {
+    await RENDER[vista](params);
+  } catch (e) {
+    if (e.status !== 401) $("vista").innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
+  }
+}
+
+// ------------------------------------------------------------------ inicio
+RENDER.inicio = async () => (S.rol === "Suscriptor" ? inicioCliente() : inicioPersonal());
+
+async function inicioCliente() {
+  const [perfil, facturas, onus, tickets, lista] = await Promise.all([
+    api("auth", `/api/clientes/${num(S.id)}`), api("pag", "/api/facturas"), api("cat", "/api/onus"),
+    api("ped", "/api/tickets"), planes()]);
+  const pend = facturas.filter(f => f.estado_pago === "Pendiente");
+  const saldo = pend.reduce((a, f) => a + num(f.monto_total), 0);
+  const plan = lista.find(p => p.id_plan === perfil.id_plan_ref);
+  const abiertos = tickets.filter(t => t.estado_ticket !== "Cerrado");
+  const onu = onus[0];
+  $("vista").innerHTML = `
+  <div class="hero"><div><div class="eyebrow">Mi cuenta Fiver Cable</div><h2>Hola, ${esc(perfil.nombres)}</h2>
+    <p>${esc(perfil.direccion_instalacion)}</p></div><div>${pill(perfil.estado_servicio)}</div></div>
+  <div class="kpis">
+    <div class="kpi ${saldo ? "ambar" : "verde"}"><div class="ico"><i class="fa-solid fa-wallet"></i></div><div><b>${q(saldo)}</b><span>Saldo pendiente</span></div></div>
+    <div class="kpi"><div class="ico"><i class="fa-solid fa-file-invoice"></i></div><div><b>${pend.length}</b><span>Facturas pendientes</span></div></div>
+    <div class="kpi azul"><div class="ico"><i class="fa-solid fa-gauge-high"></i></div><div><b>${plan ? num(plan.megas_bajada) + " Mbps" : "—"}</b><span>${esc(plan ? plan.nombre_plan : "Plan")}</span></div></div>
+    <div class="kpi ${abiertos.length ? "rojo" : "verde"}"><div class="ico"><i class="fa-solid fa-headset"></i></div><div><b>${abiertos.length}</b><span>Tickets abiertos</span></div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><div class="card-head"><h3>Mi equipo</h3>${onu ? pill(onu.estado_conexion) : ""}</div>
+      ${onu ? `<div class="dato"><span>Serie</span><b>${esc(onu.serial_number)}</b></div>
+      <div class="dato"><span>Potencia óptica</span><b>${esc(onu.potencia_optica_dbm)} dBm ${pill(onu.clasificacion_senal)}</b></div>
+      <div class="dato"><span>Puerto OLT</span><b>${esc(onu.puerto_olt)}</b></div>` : `<div class="vacio">Sin equipo registrado</div>`}
+    </div>
+    <div class="card"><div class="card-head"><h3>Acciones rápidas</h3></div>
+      <div class="acciones">
+        <button class="btn" onclick="ir('misfacturas')"><i class="fa-solid fa-file-invoice"></i>Ver mis facturas</button>
+        <button class="btn sec" onclick="ir('soporte')"><i class="fa-solid fa-triangle-exclamation"></i>Reportar una falla</button>
+        <button class="btn sec" onclick="ir('planes')"><i class="fa-solid fa-layer-group"></i>Ver planes</button>
+      </div>
+      ${saldo ? `<div class="notice">Puede pagar su saldo con el técnico durante su visita o en nuestras oficinas. Su servicio se reactiva al registrar el pago.</div>` : ""}
+    </div>
+  </div>
+  <div class="card"><div class="card-head"><h3>Mis últimos reportes</h3></div>
+    ${tabla([{ h: "Ticket", f: t => "#" + num(t.id_ticket) }, { h: "Tipo", f: t => esc(t.tipo_incidencia) },
+      { h: "Prioridad", f: t => pill(t.prioridad) }, { h: "Estado", f: t => pill(t.estado_ticket) }, { h: "Fecha", f: t => fecha(t.fecha_apertura) }],
+      tickets.slice(0, 5), { vacio: "No tiene reportes registrados" })}
+  </div>`;
+}
+
+async function inicioPersonal() {
+  const [resumen, activos, pendientes, criticas, pagos, cierre, mapa] = (await Promise.allSettled([
+    api("pag", "/api/resumen"), api("auth", "/api/suscriptores/activos"), api("ped", "/api/tickets/pendientes"),
+    api("cat", "/api/onus/criticas"), api("pag", "/api/pagos?limite=6"), api("pag", "/api/pagos/cierre-diario"), nombres(),
+  ])).map(r => (r.status === "fulfilled" ? r.value : null));
+  const r = resumen || {};
+  const titulo = { Tecnico: "Jornada del técnico", Administrador: "Panel de administración", Jefatura: "Panel de jefatura", Secretaria: "Atención de oficina" }[S.rol];
+  const accesos = {
+    Tecnico: [["cobro", "fa-cash-register", "Registrar cobro"], ["tickets", "fa-headset", "Ver tickets"], ["red", "fa-wifi", "Señal de equipos"]],
+    Administrador: [["cobro", "fa-cash-register", "Registrar cobro"], ["facturacion", "fa-file-invoice-dollar", "Emitir factura"], ["usuarios", "fa-user-shield", "Personal"]],
+    Jefatura: [["cierre", "fa-chart-column", "Cierre diario"], ["auditoria", "fa-clipboard-list", "Auditoría"], ["tickets", "fa-headset", "Tickets"]],
+    Secretaria: [["cobro", "fa-cash-register", "Pago en oficina"], ["clientes", "fa-user-plus", "Registrar cliente"], ["tickets", "fa-headset", "Crear ticket"]],
+  }[S.rol];
+  $("vista").innerHTML = `
+  <div class="hero"><div><div class="eyebrow">${esc(new Date().toLocaleDateString("es-GT", { weekday: "long", day: "numeric", month: "long" }))}</div>
+    <h2>${esc(titulo)}</h2><p>Hola, ${esc(S.nombre)}. Este es el estado de la operación.</p></div>
+    <div class="acciones">${accesos.map(a => `<button class="btn sec" onclick="ir('${a[0]}')"><i class="fa-solid ${a[1]}"></i>${a[2]}</button>`).join("")}</div></div>
+  <div class="kpis">
+    <div class="kpi verde"><div class="ico"><i class="fa-solid fa-users"></i></div><div><b>${activos ? activos.length : "—"}</b><span>Suscriptores activos</span></div></div>
+    <div class="kpi ambar"><div class="ico"><i class="fa-solid fa-file-invoice"></i></div><div><b>${num(r.facturas_pendientes)}</b><span>Pendientes · ${q(r.monto_pendiente)}</span></div></div>
+    <div class="kpi"><div class="ico"><i class="fa-solid fa-sack-dollar"></i></div><div><b>${q(r.recaudado_hoy)}</b><span>Recaudado hoy · ${num(r.cobros_hoy)} cobros</span></div></div>
+    <div class="kpi azul"><div class="ico"><i class="fa-solid fa-calendar"></i></div><div><b>${q(r.recaudado_mes)}</b><span>Recaudado del mes</span></div></div>
+    <div class="kpi rojo"><div class="ico"><i class="fa-solid fa-headset"></i></div><div><b>${pendientes ? pendientes.length : "—"}</b><span>Tickets abiertos</span></div></div>
+    <div class="kpi rojo"><div class="ico"><i class="fa-solid fa-signal"></i></div><div><b>${criticas ? criticas.length : "—"}</b><span>Equipos con señal crítica</span></div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><div class="card-head"><h3>Últimos cobros</h3>${S.rol !== "Tecnico" ? `<button class="btn sec sm" onclick="ir('cierre')">Ver cierre</button>` : ""}</div>
+      ${tabla([{ h: "Recibo", f: p => `<span class="small">${esc(p.id_transaccion_pasarela)}</span>` }, { h: "Cliente", f: p => nombreDe(mapa, p.id_cliente_ref) },
+        { h: "Método", f: p => esc(p.metodo_pago) }, { h: "Monto", f: p => `<b>${q(p.monto_pagado)}</b>`, cls: "right" }], pagos || [], { vacio: "Sin cobros registrados" })}</div>
+    <div class="card"><div class="card-head"><h3>Tickets pendientes</h3><button class="btn sec sm" onclick="ir('tickets')">Ver todos</button></div>
+      ${tabla([{ h: "#", f: t => num(t.id_ticket) }, { h: "Cliente", f: t => nombreDe(mapa, t.id_cliente_ref) },
+        { h: "Tipo", f: t => esc(t.tipo_incidencia) }, { h: "Prioridad", f: t => pill(t.prioridad) }], (pendientes || []).slice(0, 6), { vacio: "Sin tickets pendientes" })}</div>
+  </div>
+  ${cierre ? `<div class="card"><div class="card-head"><h3>Recaudación por día</h3></div>${barrasPorDia(cierre)}</div>` : ""}`;
+}
+
+function barrasPorDia(cierre) {
+  const dias = {};
+  cierre.forEach(c => { dias[c.fecha] = (dias[c.fecha] || 0) + num(c.total_recaudado); });
+  const filas = Object.entries(dias).sort((a, b) => (a[0] < b[0] ? 1 : -1)).slice(0, 7);
+  if (!filas.length) return `<div class="vacio">Sin cobros registrados</div>`;
+  const max = Math.max(...filas.map(f => f[1]));
+  return `<div class="barras">${filas.map(([d, v]) => `<div class="barra"><span>${fecha(d + "T12:00:00")}</span>
+    <div class="track"><div class="fill" style="width:${Math.max(4, (v / max) * 100)}%"></div></div><b class="right">${q(v)}</b></div>`).join("")}</div>`;
+}
+
+// ------------------------------------------------------------------ cobro
+RENDER.cobro = async (params) => {
+  const oficina = S.rol === "Secretaria";
+  $("vista").innerHTML = `
+  <div class="eyebrow">${oficina ? "Caja de oficina" : "Cobro digital"}</div><h2>Registrar pago</h2>
+  <div class="grid g2">
+    <div class="card no-print">
+      <label class="field" for="id-cliente" style="margin-top:0">Código de cliente</label>
+      <input id="id-cliente" class="input" type="number" min="1" placeholder="Ejemplo: 2" value="${params.id ? num(params.id) : ""}">
+      <div class="form-row">
+        <div><label class="field" for="metodo">Método de pago</label>
+          <select id="metodo" class="input"><option value="Efectivo">Efectivo</option><option value="Tarjeta">Tarjeta</option><option value="Transferencia">Transferencia</option></select></div>
+        <div><label class="field" for="autorizacion">Código de autorización</label>
+          <input id="autorizacion" class="input" type="text" maxlength="50" placeholder="Tarjeta o transferencia"></div>
+      </div>
+      <button id="btn-buscar" class="btn full"><i class="fa-solid fa-magnifying-glass"></i>Buscar facturas</button>
+      <div class="notice">El cobro liquida la factura completa. El sistema valida el monto, impide cobros duplicados y genera el recibo.</div>
+      <button class="btn sec sm" onclick="ir('clientes')"><i class="fa-solid fa-users"></i>¿No sabe el código? Buscar cliente</button>
+    </div>
+    <div id="ficha-cliente"></div>
+  </div>
+  <div id="cobro-msg" aria-live="polite"></div>
+  <div id="recibo"></div>
+  <div id="tabla-facturas" class="oculto"><h3 style="margin-top:18px">Facturas pendientes</h3><div id="lista-facturas" class="lista-facturas"></div></div>`;
+  $("btn-buscar").onclick = buscarFacturas;
+  $("id-cliente").onkeydown = (e) => { if (e.key === "Enter") buscarFacturas(); };
+  if (params.id) await buscarFacturas();
 };
 
-async function buscar() {
-  const id = $("id-cliente").value;
-  const r = await fetch(`/api/facturas?id_cliente=${encodeURIComponent(id)}&estado=Pendiente`, { headers: { Authorization: `Bearer ${token}` } });
-  const d = await r.json();
-  const lista = $("lista-facturas");
-  lista.innerHTML = "";
-  if (!r.ok) return mensaje("cobro-msg", escapar(d.detail || "Error al consultar"), false);
-  if (d.length === 0) { $("tabla-facturas").classList.add("oculto"); return mensaje("cobro-msg", "El cliente no tiene facturas pendientes", true); }
+let clienteCobro = null;
+async function buscarFacturas() {
+  const id = num($("id-cliente").value);
+  $("recibo").innerHTML = "";
+  if (!id) return mensaje("cobro-msg", "Escriba el código del cliente.", "err");
   $("cobro-msg").innerHTML = "";
-  $("tabla-facturas").classList.remove("oculto");
-  for (const f of d) {
-    const c = document.createElement("div");
-    c.className = "card"; c.id = `factura-${f.id_factura}`;
-    c.innerHTML = `<div class="row"><div><div class="eyebrow">Factura ${escapar(f.serie_fel)}-${escapar(f.numero_fel)}</div>
-      <div class="monto">Q ${Number(f.monto_total).toFixed(2)}</div></div><span class="pill estado">${escapar(f.estado_pago)}</span></div>
-      <button class="btn full cobrar" data-id="${f.id_factura}" data-monto="${f.monto_total}">Cobrar Q ${Number(f.monto_total).toFixed(2)}</button>`;
-    lista.appendChild(c);
+  try {
+    const [cliente, facturas] = await Promise.all([api("auth", `/api/clientes/${id}`), api("pag", `/api/facturas?id_cliente=${id}&estado=Pendiente`)]);
+    clienteCobro = cliente;
+    fichaCliente(cliente);
+    const lista = $("lista-facturas");
+    if (!facturas.length) {
+      $("tabla-facturas").classList.add("oculto");
+      lista.innerHTML = "";
+      mensaje("cobro-msg", "El cliente no tiene facturas pendientes.", "ok");
+      ofrecerReactivacion();
+      return;
+    }
+    $("tabla-facturas").classList.remove("oculto");
+    lista.innerHTML = facturas.map(f => `
+      <div class="fact" id="factura-${num(f.id_factura)}">
+        <div class="card-head" style="margin:0"><div><div class="eyebrow">Factura ${esc(f.serie_fel)}-${esc(f.numero_fel)}</div>
+          <div class="monto">${q(f.monto_total)}</div></div><span class="estado">${pill(f.estado_pago)}</span></div>
+        <div class="small muted">Emitida el ${fecha(f.fecha_emision)}</div>
+        <button class="btn verde cobrar" data-id="${num(f.id_factura)}" data-monto="${num(f.monto_total)}"><i class="fa-solid fa-check"></i>Cobrar ${q(f.monto_total)}</button>
+      </div>`).join("");
+    document.querySelectorAll("button.cobrar").forEach(b => b.onclick = () => cobrar(b, num(b.dataset.id), num(b.dataset.monto)));
+  } catch (e) {
+    $("ficha-cliente").innerHTML = "";
+    $("tabla-facturas").classList.add("oculto");
+    mensaje("cobro-msg", esc(e.message), "err");
   }
-  document.querySelectorAll("button.cobrar").forEach(b => b.onclick = () => cobrar(b.dataset.id, b.dataset.monto));
 }
-$("btn-buscar").onclick = buscar;
 
-async function cobrar(idFactura, monto) {
-  const body = { id_factura: Number(idFactura), monto_pagado: Number(monto), metodo_pago: $("metodo").value, codigo_autorizacion: $("autorizacion").value || null };
-  const r = await fetch("/api/pagos", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
-  const d = await r.json();
-  if (!r.ok) return mensaje("cobro-msg", escapar(d.detail || "No se pudo registrar el cobro"), false);
-  const tarjeta = $(`factura-${idFactura}`);
-  const estado = tarjeta.querySelector(".estado");
-  estado.textContent = d.estado_factura; estado.classList.add("ok");
-  tarjeta.querySelector("button").remove();
-  mensaje("cobro-msg", `Cobro registrado. Recibo <b id="id-transaccion">${escapar(d.id_transaccion_pasarela)}</b>`, true);
+function fichaCliente(c) {
+  $("ficha-cliente").innerHTML = `<div class="card"><div class="card-head"><h3>${esc(c.nombres)} ${esc(c.apellidos)}</h3>${pill(c.estado_servicio)}</div>
+    <div class="dato"><span>Código</span><b>#${num(c.id_cliente)}</b></div>
+    <div class="dato"><span>Dirección de instalación</span><b>${esc(c.direccion_instalacion)}</b></div>
+    <div class="dato"><span>Teléfono</span><b>${esc(c.telefono)}</b></div>
+    <div id="reactivar"></div></div>`;
 }
+
+async function cobrar(boton, idFactura, monto) {
+  document.querySelectorAll("button.cobrar").forEach(b => (b.disabled = true));
+  try {
+    const p = await api("pag", "/api/pagos", { method: "POST", body: { id_factura: idFactura, monto_pagado: monto, metodo_pago: $("metodo").value, codigo_autorizacion: $("autorizacion").value || null } });
+    const tarjeta = $(`factura-${idFactura}`);
+    tarjeta.querySelector(".estado").innerHTML = pill(p.estado_factura);
+    boton.remove();
+    mensaje("cobro-msg", `Cobro registrado. Recibo <b id="id-transaccion">${esc(p.id_transaccion_pasarela)}</b>`, "ok");
+    $("recibo").innerHTML = `<div class="card recibo"><div class="card-head"><div><div class="eyebrow">Recibo de pago · Fiver Cable</div>
+      <div class="num">${esc(p.id_transaccion_pasarela)}</div></div><button class="btn sec sm no-print" onclick="window.print()"><i class="fa-solid fa-print"></i>Imprimir</button></div>
+      <div class="form-row"><div class="dato"><span>Cliente</span><b>${clienteCobro ? esc(clienteCobro.nombres + " " + clienteCobro.apellidos) : "#" + num(p.id_cliente_ref)}</b></div>
+      <div class="dato"><span>Factura</span><b>${esc(p.factura)}</b></div>
+      <div class="dato"><span>Monto</span><b>${q(p.monto_pagado)}</b></div>
+      <div class="dato"><span>Método</span><b>${esc(p.metodo_pago)}${p.codigo_autorizacion ? " · " + esc(p.codigo_autorizacion) : ""}</b></div>
+      <div class="dato"><span>Fecha</span><b>${fechaHora(p.fecha_pago)}</b></div>
+      <div class="dato"><span>Registrado por</span><b>${esc(p.cobrado_por)}</b></div></div></div>`;
+    cacheNombres = null;
+    if (!document.querySelector("button.cobrar")) ofrecerReactivacion();
+  } catch (e) {
+    mensaje("cobro-msg", esc(e.message), "err");
+  } finally {
+    document.querySelectorAll("button.cobrar").forEach(b => (b.disabled = false));
+  }
+}
+
+function ofrecerReactivacion() {
+  if (!clienteCobro || !puede("estado") || !["Moroso", "Suspendido"].includes(clienteCobro.estado_servicio)) return;
+  $("reactivar").innerHTML = `<div class="notice">El cliente ya no tiene saldo pendiente. Puede reactivar su servicio.</div>
+    <button class="btn verde full" id="btn-reactivar"><i class="fa-solid fa-plug-circle-check"></i>Reactivar servicio</button>`;
+  $("btn-reactivar").onclick = async () => {
+    try {
+      await api("auth", `/api/clientes/${num(clienteCobro.id_cliente)}/estado`, { method: "PATCH", body: { estado_servicio: "Activo" } });
+      let extra = "";
+      if (puede("operar")) {
+        try { await api("cat", "/api/onus/estado", { method: "POST", body: { id_cliente: num(clienteCobro.id_cliente), nuevo_estado: "Online" } }); extra = " y equipo ONU en línea"; } catch (e) { extra = ""; }
+      }
+      clienteCobro.estado_servicio = "Activo";
+      fichaCliente(clienteCobro);
+      toast("Servicio reactivado" + extra);
+    } catch (e) { toast(e.message, true); }
+  };
+}
+
+// ------------------------------------------------------------------ clientes
+RENDER.clientes = async () => {
+  $("vista").innerHTML = `
+  <div class="card"><div class="card-head"><h3>Buscar clientes</h3>
+    ${puede("registrar") ? `<button class="btn sm" id="btn-nuevo-cliente"><i class="fa-solid fa-user-plus"></i>Registrar suscriptor</button>` : ""}</div>
+    <div class="acciones"><input id="buscar-cliente" class="input" style="flex:1;min-width:200px" placeholder="Nombre, correo, DPI/NIT o código">
+    <button class="btn" id="btn-buscar-cliente"><i class="fa-solid fa-magnifying-glass"></i>Buscar</button></div>
+    <div id="form-cliente"></div></div>
+  <div id="detalle-cliente"></div>
+  <div class="card" id="resultado-clientes"></div>`;
+  $("btn-buscar-cliente").onclick = listarClientes;
+  $("buscar-cliente").onkeydown = (e) => { if (e.key === "Enter") listarClientes(); };
+  if ($("btn-nuevo-cliente")) $("btn-nuevo-cliente").onclick = formularioCliente;
+  await listarClientes();
+};
+
+async function listarClientes() {
+  const texto = $("buscar-cliente").value.trim();
+  const lista = await api("auth", "/api/clientes" + (texto ? `?q=${encodeURIComponent(texto)}` : ""));
+  $("resultado-clientes").innerHTML = `<div class="card-head"><h3>Suscriptores</h3><span class="muted small">${lista.length} resultado(s)</span></div>` +
+    tabla([{ h: "Código", f: c => "#" + num(c.id_cliente) }, { h: "Nombre", f: c => `<b>${esc(c.nombres)} ${esc(c.apellidos)}</b>` },
+      { h: "DPI / NIT", f: c => esc(c.dpi_nit) }, { h: "Teléfono", f: c => esc(c.telefono) }, { h: "Estado", f: c => pill(c.estado_servicio) },
+      { h: "", f: c => `<button class="btn sec sm">Ver</button>`, cls: "right" }],
+    lista, { vacio: "No se encontraron clientes", clic: c => `detalleCliente(${num(c.id_cliente)})` });
+}
+
+async function detalleCliente(id) {
+  const caja = $("detalle-cliente");
+  caja.innerHTML = `<div class="card cargando">Cargando cliente…</div>`;
+  try {
+    const [c, facturas, onus, tickets, lista] = await Promise.all([api("auth", `/api/clientes/${id}`), api("pag", `/api/facturas?id_cliente=${id}`),
+      api("cat", `/api/onus?id_cliente=${id}`), api("ped", `/api/tickets?id_cliente=${id}`), planes()]);
+    const plan = lista.find(p => p.id_plan === c.id_plan_ref);
+    const saldo = facturas.filter(f => f.estado_pago === "Pendiente").reduce((a, f) => a + num(f.monto_total), 0);
+    const opciones = (TRANSICIONES[c.estado_servicio] || []).map(e => `<option>${e}</option>`).join("");
+    caja.innerHTML = `<div class="card"><div class="card-head"><div><div class="eyebrow">Cliente #${num(c.id_cliente)}</div><h3>${esc(c.nombres)} ${esc(c.apellidos)}</h3></div>${pill(c.estado_servicio)}</div>
+      <div class="grid g3">
+        <div><div class="dato"><span>DPI / NIT</span><b>${esc(c.dpi_nit)}</b></div><div class="dato"><span>Correo</span><b>${esc(c.correo)}</b></div><div class="dato"><span>Teléfono</span><b>${esc(c.telefono)}</b></div></div>
+        <div><div class="dato"><span>Dirección</span><b>${esc(c.direccion_instalacion)}</b></div><div class="dato"><span>Plan</span><b>${esc(plan ? plan.nombre_plan + " · " + q(plan.precio_mensual) : "—")}</b></div><div class="dato"><span>Saldo pendiente</span><b>${q(saldo)}</b></div></div>
+        <div><div class="dato"><span>Equipo</span><b>${onus[0] ? esc(onus[0].serial_number) + " " + pill(onus[0].estado_conexion) : "Sin equipo"}</b></div>
+          <div class="dato"><span>Señal</span><b>${onus[0] ? esc(onus[0].potencia_optica_dbm) + " dBm " + pill(onus[0].clasificacion_senal) : "—"}</b></div>
+          <div class="dato"><span>Cliente desde</span><b>${fecha(c.fecha_registro)}</b></div></div>
+      </div>
+      <div class="acciones" style="margin-top:14px">
+        ${puede("cobrar") ? `<button class="btn verde" onclick="ir('cobro',{id:${num(c.id_cliente)}})"><i class="fa-solid fa-cash-register"></i>Cobrar</button>` : ""}
+        ${puede("emitir") ? `<button class="btn sec" onclick="ir('facturacion',{id:${num(c.id_cliente)}})"><i class="fa-solid fa-file-invoice-dollar"></i>Emitir factura</button>` : ""}
+        ${puede("crearTicket") ? `<button class="btn sec" onclick="ir('tickets',{id:${num(c.id_cliente)}})"><i class="fa-solid fa-headset"></i>Nuevo ticket</button>` : ""}
+        ${puede("estado") && opciones ? `<span class="acciones"><select id="nuevo-estado" class="input" style="width:auto">${opciones}</select>
+          <button class="btn sec" id="btn-estado"><i class="fa-solid fa-arrows-rotate"></i>Cambiar estado</button></span>` : ""}
+        <button class="btn sec" onclick="document.getElementById('detalle-cliente').innerHTML=''">Cerrar</button>
+      </div>
+      <h3 style="margin-top:20px">Facturas</h3>
+      ${tabla([{ h: "Factura", f: f => `${esc(f.serie_fel)}-${esc(f.numero_fel)}` }, { h: "Emisión", f: f => fecha(f.fecha_emision) },
+        { h: "Monto", f: f => q(f.monto_total), cls: "right" }, { h: "Estado", f: f => pill(f.estado_pago) }], facturas, { vacio: "Sin facturas" })}
+      <h3 style="margin-top:20px">Tickets</h3>
+      ${tabla([{ h: "#", f: t => num(t.id_ticket) }, { h: "Tipo", f: t => esc(t.tipo_incidencia) }, { h: "Prioridad", f: t => pill(t.prioridad) },
+        { h: "Estado", f: t => pill(t.estado_ticket) }, { h: "Fecha", f: t => fecha(t.fecha_apertura) }], tickets, { vacio: "Sin tickets" })}
+    </div>`;
+    if ($("btn-estado")) $("btn-estado").onclick = async () => {
+      try {
+        const r = await api("auth", `/api/clientes/${num(c.id_cliente)}/estado`, { method: "PATCH", body: { estado_servicio: $("nuevo-estado").value } });
+        toast(`Estado actualizado: ${r.estado_anterior} → ${r.estado_nuevo}`);
+        await listarClientes(); await detalleCliente(id);
+      } catch (e) { toast(e.message, true); }
+    };
+    caja.scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (e) { caja.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+}
+
+async function formularioCliente() {
+  const lista = await planes();
+  $("form-cliente").innerHTML = `<form id="nuevo-cliente" style="margin-top:16px">
+    <div class="form-row">
+      <div><label class="field">Nombres</label><input class="input" name="nombres" required maxlength="100"></div>
+      <div><label class="field">Apellidos</label><input class="input" name="apellidos" required maxlength="100"></div>
+      <div><label class="field">DPI (13 dígitos) o NIT</label><input class="input" name="dpi_nit" required maxlength="20"></div>
+      <div><label class="field">Teléfono</label><input class="input" name="telefono" required pattern="\\d{8,15}" placeholder="8 dígitos"></div>
+      <div><label class="field">Correo</label><input class="input" name="correo" type="email" required></div>
+      <div><label class="field">Plan</label><select class="input" name="id_plan_ref">${lista.map(p => `<option value="${num(p.id_plan)}">${esc(p.nombre_plan)} · ${q(p.precio_mensual)}</option>`).join("")}</select></div>
+    </div>
+    <label class="field">Dirección de instalación</label><input class="input" name="direccion_instalacion" required minlength="3">
+    <label class="field">Contraseña inicial (8+ caracteres, mayúscula, minúscula y número)</label><input class="input" name="password" type="password" required autocomplete="new-password">
+    <div class="acciones" style="margin-top:14px"><button class="btn" type="submit"><i class="fa-solid fa-floppy-disk"></i>Registrar</button>
+    <button class="btn sec" type="button" onclick="document.getElementById('form-cliente').innerHTML=''">Cancelar</button></div>
+    <div id="cliente-msg"></div></form>`;
+  $("nuevo-cliente").onsubmit = async (e) => {
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(e.target));
+    d.id_plan_ref = num(d.id_plan_ref);
+    try {
+      const c = await api("auth", "/api/auth/registro", { method: "POST", body: d });
+      cacheNombres = null;
+      toast(`Suscriptor registrado con código #${num(c.id_cliente)}`);
+      $("form-cliente").innerHTML = "";
+      await listarClientes(); await detalleCliente(num(c.id_cliente));
+    } catch (err) { mensaje("cliente-msg", esc(err.message), "err"); }
+  };
+}
+
+// ------------------------------------------------------------------ facturación
+RENDER.facturacion = async (params) => {
+  const lista = await planes();
+  $("vista").innerHTML = `
+  ${puede("emitir") ? `<div class="card"><div class="card-head"><h3>Emitir factura</h3></div>
+    <form id="form-factura"><div class="form-row">
+      <div><label class="field">Código de cliente</label><input class="input" id="fac-cliente" type="number" min="1" required value="${params.id ? num(params.id) : ""}"></div>
+      <div><label class="field">Concepto (plan)</label><select class="input" id="fac-plan"><option value="">Monto libre</option>${lista.map(p => `<option value="${num(p.precio_mensual)}">${esc(p.nombre_plan)} · ${q(p.precio_mensual)}</option>`).join("")}</select></div>
+      <div><label class="field">Monto (Q)</label><input class="input" id="fac-monto" type="number" min="1" step="0.01" required></div>
+    </div><button class="btn full" type="submit"><i class="fa-solid fa-file-circle-plus"></i>Emitir factura FEL</button><div id="factura-msg"></div></form></div>` : ""}
+  <div class="card"><div class="card-head"><h3>Facturas</h3>
+    <div class="acciones"><select id="fil-estado" class="input" style="width:auto"><option value="">Todas</option><option>Pendiente</option><option>Pagado</option><option>Anulado</option></select>
+    <input id="fil-cliente" class="input" type="number" min="1" placeholder="Código cliente" style="width:150px"></div></div>
+    <div id="lista-fac"></div></div>`;
+  if ($("form-factura")) {
+    $("fac-plan").onchange = () => { if ($("fac-plan").value) $("fac-monto").value = $("fac-plan").value; };
+    $("form-factura").onsubmit = async (e) => {
+      e.preventDefault();
+      try {
+        const f = await api("pag", "/api/facturas", { method: "POST", body: { id_cliente_ref: num($("fac-cliente").value), monto_total: num($("fac-monto").value) } });
+        mensaje("factura-msg", `Factura <b>${esc(f.serie_fel)}-${esc(f.numero_fel)}</b> emitida por ${q(f.monto_total)} · UUID ${esc(f.uuid_sat)}`, "ok");
+        await listarFacturas();
+      } catch (err) { mensaje("factura-msg", esc(err.message), "err"); }
+    };
+  }
+  $("fil-estado").onchange = listarFacturas;
+  $("fil-cliente").onchange = listarFacturas;
+  await listarFacturas();
+};
+
+async function listarFacturas() {
+  const estado = $("fil-estado").value, cliente = num($("fil-cliente").value);
+  const qs = new URLSearchParams();
+  if (estado) qs.set("estado", estado);
+  if (cliente) qs.set("id_cliente", cliente);
+  const [lista, mapa] = await Promise.all([api("pag", "/api/facturas?" + qs), nombres()]);
+  const total = lista.reduce((a, f) => a + num(f.monto_total), 0);
+  $("lista-fac").innerHTML = `<p class="muted small">${lista.length} factura(s) · ${q(total)}</p>` +
+    tabla([{ h: "Factura", f: f => `<b>${esc(f.serie_fel)}-${esc(f.numero_fel)}</b>` }, { h: "Cliente", f: f => nombreDe(mapa, f.id_cliente_ref) },
+      { h: "Emisión", f: f => fecha(f.fecha_emision) }, { h: "Monto", f: f => q(f.monto_total), cls: "right" }, { h: "Estado", f: f => pill(f.estado_pago) },
+      { h: "Acción", f: f => f.estado_pago === "Pendiente" && puede("cobrar") ? `<button class="btn verde sm" onclick="ir('cobro',{id:${num(f.id_cliente_ref)}})">Cobrar</button>` : "" }],
+    lista.slice().reverse(), { vacio: "No hay facturas con ese filtro" });
+}
+
+// ------------------------------------------------------------------ cierre diario
+RENDER.cierre = async () => {
+  const [resumen, cierre, pagos, mapa] = await Promise.all([api("pag", "/api/resumen"), api("pag", "/api/pagos/cierre-diario"), api("pag", "/api/pagos?limite=50"), nombres()]);
+  const hoy = new Date().toISOString().slice(0, 10);
+  const deHoy = cierre.filter(c => String(c.fecha).slice(0, 10) === hoy);
+  $("vista").innerHTML = `
+  <div class="kpis">
+    <div class="kpi verde"><div class="ico"><i class="fa-solid fa-sack-dollar"></i></div><div><b>${q(resumen.recaudado_hoy)}</b><span>Recaudado hoy</span></div></div>
+    <div class="kpi"><div class="ico"><i class="fa-solid fa-receipt"></i></div><div><b>${num(resumen.cobros_hoy)}</b><span>Cobros de hoy</span></div></div>
+    <div class="kpi azul"><div class="ico"><i class="fa-solid fa-calendar"></i></div><div><b>${q(resumen.recaudado_mes)}</b><span>Recaudado del mes</span></div></div>
+    <div class="kpi ambar"><div class="ico"><i class="fa-solid fa-hourglass-half"></i></div><div><b>${q(resumen.monto_pendiente)}</b><span>Por cobrar (${num(resumen.facturas_pendientes)})</span></div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><div class="card-head"><h3>Cierre de hoy por método</h3><button class="btn sec sm no-print" onclick="window.print()"><i class="fa-solid fa-print"></i>Imprimir</button></div>
+      ${tabla([{ h: "Método", f: c => esc(c.metodo_pago) }, { h: "Transacciones", f: c => num(c.total_transacciones), cls: "right" }, { h: "Total", f: c => `<b>${q(c.total_recaudado)}</b>`, cls: "right" }], deHoy, { vacio: "Aún no hay cobros hoy" })}</div>
+    <div class="card"><div class="card-head"><h3>Recaudación por día</h3></div>${barrasPorDia(cierre)}</div>
+  </div>
+  <div class="card"><div class="card-head"><h3>Detalle de cobros</h3></div>
+    ${tabla([{ h: "Fecha", f: p => fechaHora(p.fecha_pago) }, { h: "Recibo", f: p => `<span class="small">${esc(p.id_transaccion_pasarela)}</span>` },
+      { h: "Factura", f: p => esc(p.factura) }, { h: "Cliente", f: p => nombreDe(mapa, p.id_cliente_ref) }, { h: "Método", f: p => esc(p.metodo_pago) },
+      { h: "Monto", f: p => `<b>${q(p.monto_pagado)}</b>`, cls: "right" }, { h: "Registrado por", f: p => `<span class="small">${esc(p.registrado_por || "—")}</span>` }], pagos, { vacio: "Sin cobros" })}</div>`;
+};
+
+// ------------------------------------------------------------------ red
+RENDER.red = async () => {
+  const [onus, mapa] = await Promise.all([api("cat", "/api/onus"), nombres()]);
+  const criticas = onus.filter(o => String(o.clasificacion_senal).startsWith("Critica"));
+  $("vista").innerHTML = `
+  <div class="kpis">
+    <div class="kpi"><div class="ico"><i class="fa-solid fa-tower-broadcast"></i></div><div><b>${onus.length}</b><span>Equipos ONU</span></div></div>
+    <div class="kpi verde"><div class="ico"><i class="fa-solid fa-circle-check"></i></div><div><b>${onus.filter(o => o.estado_conexion === "Online").length}</b><span>En línea</span></div></div>
+    <div class="kpi rojo"><div class="ico"><i class="fa-solid fa-signal"></i></div><div><b>${criticas.length}</b><span>Señal crítica</span></div></div>
+    <div class="kpi ambar"><div class="ico"><i class="fa-solid fa-ban"></i></div><div><b>${onus.filter(o => o.estado_conexion === "Suspendido").length}</b><span>Suspendidos</span></div></div>
+  </div>
+  <div class="card"><div class="card-head"><h3>Equipos de los clientes</h3>${puede("operar") ? `<button class="btn sm" id="btn-nueva-onu"><i class="fa-solid fa-plus"></i>Registrar ONU</button>` : ""}</div>
+    <div id="form-onu"></div>
+    ${tabla([{ h: "Cliente", f: o => nombreDe(mapa, o.id_cliente_ref) }, { h: "Serie / MAC", f: o => `${esc(o.serial_number)}<br><span class="muted small">${esc(o.mac_address)}</span>` },
+      { h: "Puerto", f: o => esc(o.puerto_olt) }, { h: "Potencia", f: o => `${esc(o.potencia_optica_dbm ?? "—")} dBm` }, { h: "Señal", f: o => pill(o.clasificacion_senal) },
+      { h: "Estado", f: o => pill(o.estado_conexion) },
+      ...(puede("operar") ? [{ h: "Acción", f: o => `<span class="acciones"><select class="input" id="onu-${num(o.id_onu)}" style="width:auto;padding:6px 8px">${["Online", "Corta_Velocidad", "Suspendido", "Offline"].map(e => `<option ${e === o.estado_conexion ? "selected" : ""}>${e}</option>`).join("")}</select>
+        <button class="btn sec sm" onclick="cambiarOnu(${num(o.id_onu)},${num(o.id_cliente_ref)})">Aplicar</button></span>` }] : [])],
+    onus, { vacio: "Sin equipos registrados" })}
+    <div class="notice">Rango de potencia normal: entre −25 y −8 dBm. Por debajo de −27 dBm se considera señal crítica (fibra dañada o conector sucio).</div></div>`;
+  if ($("btn-nueva-onu")) $("btn-nueva-onu").onclick = () => {
+    $("form-onu").innerHTML = `<form id="nueva-onu" class="card" style="background:#fbf9ff"><div class="form-row">
+      <div><label class="field">Código de cliente</label><input class="input" name="id_cliente_ref" type="number" min="1" required></div>
+      <div><label class="field">MAC</label><input class="input" name="mac_address" required placeholder="48:57:DD:00:00:01"></div>
+      <div><label class="field">Número de serie</label><input class="input" name="serial_number" required minlength="4"></div>
+      <div><label class="field">Puerto OLT</label><input class="input" name="puerto_olt" required placeholder="Slot1/Pon2"></div>
+      <div><label class="field">IP asignada</label><input class="input" name="ip_asignada" placeholder="10.20.5.30"></div>
+      <div><label class="field">Potencia (dBm)</label><input class="input" name="potencia_optica_dbm" type="number" step="0.01" placeholder="-19.5"></div>
+    </div><button class="btn full" type="submit">Guardar equipo</button><div id="onu-msg"></div></form>`;
+    $("nueva-onu").onsubmit = async (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(e.target));
+      d.id_cliente_ref = num(d.id_cliente_ref);
+      d.ip_asignada = d.ip_asignada || null;
+      d.potencia_optica_dbm = d.potencia_optica_dbm === "" ? null : num(d.potencia_optica_dbm);
+      try { await api("cat", "/api/onus", { method: "POST", body: d }); toast("Equipo registrado"); ir("red"); }
+      catch (err) { mensaje("onu-msg", esc(err.message), "err"); }
+    };
+  };
+};
+
+async function cambiarOnu(idOnu, idCliente) {
+  try {
+    await api("cat", "/api/onus/estado", { method: "POST", body: { id_cliente: idCliente, nuevo_estado: $(`onu-${idOnu}`).value } });
+    toast("Estado del equipo actualizado en la OLT");
+    ir("red");
+  } catch (e) { toast(e.message, true); }
+}
+
+// ------------------------------------------------------------------ tickets
+RENDER.tickets = async (params) => {
+  $("vista").innerHTML = `
+  ${puede("crearTicket") ? formularioTicket(params.id) : ""}
+  <div class="card"><div class="card-head"><h3>Tickets</h3>
+    <select id="fil-ticket" class="input" style="width:auto"><option value="pend">Pendientes</option><option value="todos">Todos</option></select></div>
+    <div id="lista-tickets"></div></div>`;
+  activarFormularioTicket(() => listarTickets());
+  $("fil-ticket").onchange = listarTickets;
+  await listarTickets();
+};
+
+function formularioTicket(id, propio) {
+  return `<div class="card"><div class="card-head"><h3>${propio ? "Reportar una falla" : "Nuevo ticket"}</h3></div><form id="form-ticket"><div class="form-row">
+    ${propio ? "" : `<div><label class="field">Código de cliente</label><input class="input" id="tk-cliente" type="number" min="1" required value="${id ? num(id) : ""}"></div>`}
+    <div><label class="field" for="tk-tipo">Tipo de problema</label><select class="input" id="tk-tipo">
+      <option>Sin servicio</option><option>Velocidad</option><option>Intermitencia</option><option>Señal baja</option><option>Televisión</option><option>Consulta</option></select></div>
+    </div><label class="field" for="tk-desc">Descripción</label><textarea class="input" id="tk-desc" rows="3" minlength="5" required placeholder="Describa el problema"></textarea>
+    <button class="btn full" type="submit"><i class="fa-solid fa-paper-plane"></i>Enviar reporte</button><div id="ticket-msg"></div></form>
+    <p class="muted small">La prioridad y el tiempo de atención (SLA) se asignan automáticamente según la descripción.</p></div>`;
+}
+
+function activarFormularioTicket(despues) {
+  const f = $("form-ticket");
+  if (!f) return;
+  f.onsubmit = async (e) => {
+    e.preventDefault();
+    const idCliente = $("tk-cliente") ? num($("tk-cliente").value) : num(S.id);
+    try {
+      const t = await api("ped", "/api/tickets", { method: "POST", body: { id_cliente_ref: idCliente, tipo_incidencia: $("tk-tipo").value, descripcion_falla: $("tk-desc").value } });
+      mensaje("ticket-msg", `Ticket <b>#${num(t.id_ticket)}</b> creado · prioridad ${esc(t.prioridad)} · atención en máximo ${num(t.sla_horas)} horas`, "ok");
+      $("tk-desc").value = "";
+      await despues();
+    } catch (err) { mensaje("ticket-msg", esc(err.message), "err"); }
+  };
+}
+
+async function listarTickets() {
+  const pend = $("fil-ticket").value === "pend";
+  const [lista, mapa] = await Promise.all([api("ped", pend ? "/api/tickets/pendientes" : "/api/tickets"), nombres()]);
+  $("lista-tickets").innerHTML = tabla([{ h: "#", f: t => num(t.id_ticket) }, { h: "Cliente", f: t => nombreDe(mapa, t.id_cliente_ref) },
+    { h: "Tipo", f: t => esc(t.tipo_incidencia) }, { h: "Prioridad", f: t => pill(t.prioridad) }, { h: "Estado", f: t => pill(t.estado_ticket) },
+    { h: "Apertura", f: t => fecha(t.fecha_apertura) },
+    ...(puede("operar") ? [{ h: "Acción", f: t => `<span class="acciones">${t.estado_ticket === "Abierto" ? `<button class="btn sec sm" onclick="accionTicket(${num(t.id_ticket)},'tomar')">Tomar</button>` : ""}
+      ${t.estado_ticket !== "Cerrado" ? `<button class="btn verde sm" onclick="accionTicket(${num(t.id_ticket)},'cerrar')">Cerrar</button>` : ""}</span>` }] : [])],
+  lista, { vacio: pend ? "No hay tickets pendientes" : "Sin tickets" });
+}
+
+async function accionTicket(id, accion) {
+  try {
+    await api("ped", `/api/tickets/${num(id)}/${accion}`, { method: "POST" });
+    toast(accion === "tomar" ? `Ticket #${id} asignado a usted` : `Ticket #${id} cerrado`);
+    await listarTickets();
+  } catch (e) { toast(e.message, true); }
+}
+
+RENDER.soporte = async () => {
+  $("vista").innerHTML = `${formularioTicket(null, true)}<div class="card"><div class="card-head"><h3>Mis reportes</h3></div><div id="mis-tickets"></div></div>`;
+  const listar = async () => {
+    const lista = await api("ped", "/api/tickets");
+    $("mis-tickets").innerHTML = tabla([{ h: "Ticket", f: t => "#" + num(t.id_ticket) }, { h: "Tipo", f: t => esc(t.tipo_incidencia) },
+      { h: "Descripción", f: t => esc(t.descripcion_falla) }, { h: "Prioridad", f: t => pill(t.prioridad) },
+      { h: "Atención máx.", f: t => num(t.sla_horas) + " h" }, { h: "Estado", f: t => pill(t.estado_ticket) }], lista, { vacio: "No tiene reportes" });
+  };
+  activarFormularioTicket(listar);
+  await listar();
+};
+
+// ------------------------------------------------------------------ cliente
+RENDER.misfacturas = async () => {
+  const lista = await api("pag", "/api/facturas");
+  const pend = lista.filter(f => f.estado_pago === "Pendiente");
+  const saldo = pend.reduce((a, f) => a + num(f.monto_total), 0);
+  $("vista").innerHTML = `
+  <div class="kpis"><div class="kpi ${saldo ? "ambar" : "verde"}"><div class="ico"><i class="fa-solid fa-wallet"></i></div><div><b>${q(saldo)}</b><span>Saldo pendiente</span></div></div>
+    <div class="kpi"><div class="ico"><i class="fa-solid fa-file-invoice"></i></div><div><b>${pend.length} de ${lista.length}</b><span>Facturas pendientes</span></div></div></div>
+  ${saldo ? `<div class="notice">Pague con el técnico durante su visita o en oficina. Al registrar el pago recibirá un recibo con número único y su servicio se reactiva.</div>` : `<div class="msg ok">Está al día con sus pagos.</div>`}
+  <div class="card">${tabla([{ h: "Factura", f: f => `<b>${esc(f.serie_fel)}-${esc(f.numero_fel)}</b>` }, { h: "Emisión", f: f => fecha(f.fecha_emision) },
+    { h: "UUID SAT", f: f => `<span class="small muted">${esc(f.uuid_sat)}</span>` }, { h: "Monto", f: f => `<b>${q(f.monto_total)}</b>`, cls: "right" }, { h: "Estado", f: f => pill(f.estado_pago) }],
+  lista.slice().reverse(), { vacio: "Sin facturas" })}</div>`;
+};
+
+RENDER.planes = async () => {
+  const lista = await planes();
+  const actual = S.perfil ? S.perfil.id_plan_ref : null;
+  $("vista").innerHTML = `<div class="planes">${lista.map(p => `<div class="plan ${p.id_plan === actual ? "actual" : ""}">
+    ${p.id_plan === actual ? `<span class="pill ok">Su plan actual</span>` : `<span class="eyebrow">Plan</span>`}
+    <h3 style="margin-top:8px">${esc(p.nombre_plan)}</h3><div class="precio">${q(p.precio_mensual)}<span class="muted small"> /mes</span></div>
+    <div class="dato"><span>Descarga</span><b>${num(p.megas_bajada)} Mbps</b></div><div class="dato"><span>Subida</span><b>${num(p.megas_subida)} Mbps</b></div>
+    <p class="muted small">${esc(p.descripcion)}</p></div>`).join("")}</div>
+    ${S.rol === "Suscriptor" ? `<div class="notice">Para cambiar de plan, cree un ticket de tipo "Consulta" en Soporte.</div>` : ""}`;
+};
+
+// ------------------------------------------------------------------ administración
+RENDER.usuarios = async () => {
+  $("vista").innerHTML = `
+  <div class="card"><div class="card-head"><h3>Agregar personal</h3></div><form id="form-personal"><div class="form-row">
+    <div><label class="field">Nombres</label><input class="input" name="nombres" required></div>
+    <div><label class="field">Apellidos</label><input class="input" name="apellidos" required></div>
+    <div><label class="field">Teléfono</label><input class="input" name="telefono" required pattern="\\d{8,15}"></div>
+    <div><label class="field">Correo</label><input class="input" name="correo" type="email" required></div>
+    <div><label class="field">Rol</label><select class="input" name="rol"><option value="Tecnico">Técnico</option><option value="Secretaria">Secretaría</option><option value="Jefatura">Jefatura</option><option value="Administrador">Administrador</option></select></div>
+    <div><label class="field">Contraseña inicial</label><input class="input" name="password" type="password" required autocomplete="new-password"></div>
+  </div><button class="btn full" type="submit"><i class="fa-solid fa-user-plus"></i>Crear cuenta</button><div id="personal-msg"></div></form></div>
+  <div class="card"><div class="card-head"><h3>Personal de Fiver Cable</h3></div><div id="lista-personal"></div></div>
+  <div class="card"><h3>Permisos por rol</h3>${tabla([{ h: "Rol", f: r => `<b>${r[0]}</b>` }, { h: "Puede", f: r => esc(r[1]) }], [
+    ["Técnico", "Cobrar en campo, ver clientes, cambiar estado del servicio, atender tickets y operar equipos ONU"],
+    ["Secretaría", "Registrar suscriptores, emitir facturas, cobrar en oficina, crear tickets y ver el cierre diario"],
+    ["Jefatura", "Consultar indicadores, cierre diario, clientes, tickets, red y auditoría (solo lectura)"],
+    ["Administrador", "Todas las operaciones y la gestión del personal"],
+    ["Cliente", "Ver su cuenta, sus facturas y reportar fallas de su propio servicio"]])}</div>`;
+  const listar = async () => {
+    const lista = await api("auth", "/api/clientes?rol=Personal");
+    $("lista-personal").innerHTML = tabla([{ h: "Código", f: u => "#" + num(u.id_cliente) }, { h: "Nombre", f: u => `<b>${esc(u.nombres)} ${esc(u.apellidos)}</b>` },
+      { h: "Correo", f: u => esc(u.correo) }, { h: "Rol", f: u => pill(u.rol) }, { h: "Estado", f: u => pill(u.estado_servicio) }], lista);
+  };
+  $("form-personal").onsubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const u = await api("auth", "/api/usuarios", { method: "POST", body: Object.fromEntries(new FormData(e.target)) });
+      mensaje("personal-msg", `Cuenta creada para ${esc(u.correo)} con rol ${esc(NOMBRE_ROL[u.rol])}`, "ok");
+      e.target.reset(); await listar();
+    } catch (err) { mensaje("personal-msg", esc(err.message), "err"); }
+  };
+  await listar();
+};
+
+RENDER.auditoria = async () => {
+  const lista = await api("auth", "/api/auditoria");
+  $("vista").innerHTML = `<div class="notice">Registro automático (trigger de base de datos) de cada cambio de estado del servicio, con el usuario que lo realizó. No se puede editar desde la aplicación.</div>
+  <div class="card">${tabla([{ h: "Fecha", f: a => fechaHora(a.fecha_evento) }, { h: "Cliente", f: a => `${esc(a.cliente || "")} <span class="muted small">#${num(a.id_cliente)}</span>` },
+    { h: "Acción", f: a => esc(String(a.accion).replace(/_/g, " ")) },
+    { h: "Cambio", f: a => a.detalles ? `${pill(a.detalles.estado_anterior)} → ${pill(a.detalles.estado_nuevo)}` : "—" },
+    { h: "Realizado por", f: a => esc(a.usuario_operador) }], lista, { vacio: "Aún no hay eventos de auditoría" })}</div>`;
+};
+
+// ------------------------------------------------------------------ perfil
+RENDER.perfil = async () => {
+  const p = await api("auth", `/api/clientes/${num(S.id)}`);
+  $("vista").innerHTML = `<div class="grid g2">
+  <div class="card"><div class="card-head"><h3>${esc(p.nombres)} ${esc(p.apellidos)}</h3>${pill(p.rol)}</div>
+    <div class="dato"><span>Correo</span><b>${esc(p.correo)}</b></div><div class="dato"><span>Teléfono</span><b>${esc(p.telefono)}</b></div>
+    <div class="dato"><span>Dirección</span><b>${esc(p.direccion_instalacion)}</b></div><div class="dato"><span>Estado de la cuenta</span><b>${pill(p.estado_servicio)}</b></div>
+    <div class="notice">Su sesión expira automáticamente a los 60 minutos. Cierre sesión al terminar en equipos compartidos.</div></div>
+  <form id="change-password-form" class="card"><h3>Cambiar contraseña</h3>
+    <label class="field" for="password-actual">Contraseña actual</label><input id="password-actual" class="input" type="password" autocomplete="current-password" required>
+    <label class="field" for="password-nueva">Nueva contraseña</label><input id="password-nueva" class="input" type="password" autocomplete="new-password" minlength="8" required>
+    <label class="field" for="password-confirmacion">Confirmar nueva contraseña</label><input id="password-confirmacion" class="input" type="password" autocomplete="new-password" minlength="8" required>
+    <p class="muted small">Mínimo 8 caracteres, con mayúscula, minúscula y número.</p>
+    <button id="btn-guardar-password" class="btn full" type="submit">Actualizar contraseña</button><div id="password-msg" aria-live="polite"></div></form></div>`;
+  $("change-password-form").onsubmit = async (e) => {
+    e.preventDefault();
+    if ($("password-nueva").value !== $("password-confirmacion").value) return mensaje("password-msg", "La confirmación no coincide con la nueva contraseña.", "err");
+    try {
+      await api("auth", "/api/auth/cambiar-password", { method: "PUT", body: { password_actual: $("password-actual").value, password_nueva: $("password-nueva").value } });
+      e.target.reset();
+      mensaje("password-msg", "Contraseña actualizada correctamente.", "ok");
+    } catch (err) { mensaje("password-msg", esc(err.message), "err"); }
+  };
+};
 </script>
 </body>
 </html>

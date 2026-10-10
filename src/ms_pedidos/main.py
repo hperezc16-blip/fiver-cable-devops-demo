@@ -2,7 +2,7 @@
 from fastapi import Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from src.common.base import crear_app, get_conn, requiere_rol, usuario_actual
+from src.common.base import OPERACION, PERSONAL, crear_app, get_conn, requiere_rol, usuario_actual
 from src.ms_pedidos import logic
 
 ESQUEMA = "soporte_db"
@@ -32,14 +32,43 @@ def crear_ticket(datos: NuevoTicket, user: dict = Depends(usuario_actual)):
     return fila
 
 
+@app.get("/api/tickets")
+def listar_tickets(id_cliente: int | None = None, user: dict = Depends(usuario_actual)):
+    if user["rol"] == "Suscriptor":
+        id_cliente = int(user["sub"])
+    elif user["rol"] not in PERSONAL:
+        raise HTTPException(403, "Rol sin permiso para esta operación")
+    sql, params = "SELECT * FROM tickets_soporte", []
+    if id_cliente is not None:
+        sql += " WHERE id_cliente_ref = %s"
+        params.append(id_cliente)
+    with get_conn(ESQUEMA) as c:
+        filas = c.execute(sql + " ORDER BY id_ticket DESC LIMIT 200", params).fetchall()
+    for f in filas:
+        f["sla_horas"] = logic.sla_horas(f["prioridad"])
+    return filas
+
+
 @app.get("/api/tickets/pendientes")
-def tickets_pendientes(user: dict = Depends(requiere_rol("Tecnico", "Administrador"))):
+def tickets_pendientes(user: dict = Depends(requiere_rol(*PERSONAL))):
     with get_conn(ESQUEMA) as c:
         return c.execute("SELECT * FROM vw_tickets_pendientes ORDER BY fecha_apertura").fetchall()
 
 
+@app.post("/api/tickets/{id_ticket}/tomar")
+def tomar_ticket(id_ticket: int, user: dict = Depends(requiere_rol(*OPERACION))):
+    with get_conn(ESQUEMA) as c:
+        fila = c.execute(
+            """UPDATE tickets_soporte SET estado_ticket = 'En_Proceso', id_tecnico_asignado = %s
+               WHERE id_ticket = %s AND estado_ticket = 'Abierto' RETURNING *""",
+            (int(user["sub"]), id_ticket)).fetchone()
+    if not fila:
+        raise HTTPException(409, "El ticket no existe o ya fue tomado")
+    return fila
+
+
 @app.post("/api/tickets/{id_ticket}/cerrar")
-def cerrar_ticket(id_ticket: int, user: dict = Depends(requiere_rol("Tecnico", "Administrador"))):
+def cerrar_ticket(id_ticket: int, user: dict = Depends(requiere_rol(*OPERACION))):
     with get_conn(ESQUEMA) as c:
         existe = c.execute("SELECT estado_ticket FROM tickets_soporte WHERE id_ticket = %s", (id_ticket,)).fetchone()
         if not existe:

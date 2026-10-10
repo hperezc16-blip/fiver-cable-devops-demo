@@ -53,6 +53,10 @@ services:
     build: { context: ., dockerfile: docker/Dockerfile.pagos }
     container_name: ms_pagos
     env_file: [.env]
-    environment: { DB_HOST: postgres_db, AUTH_PUBLIC_URL: "http://localhost:3000" }
+    environment:
+      DB_HOST: postgres_db
+      AUTH_PUBLIC_URL: "http://localhost:3000"
+      CATALOGO_PUBLIC_URL: "http://localhost:3001"
+      PEDIDOS_PUBLIC_URL: "http://localhost:3002"
     ports: ["3003:3003"]
     depends_on: { postgres_db: { condition: service_healthy } }

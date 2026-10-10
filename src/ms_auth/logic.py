@@ -3,7 +3,8 @@ import re
 
 import bcrypt
 
-ROLES = {"Suscriptor", "Tecnico", "Administrador"}
+ROLES = {"Suscriptor", "Tecnico", "Administrador", "Jefatura", "Secretaria"}
+ROLES_PERSONAL = ROLES - {"Suscriptor"}
 ESTADOS = {"Activo", "Moroso", "Suspendido", "Inactivo"}
 # Transiciones permitidas del estado de servicio del suscriptor
 TRANSICIONES = {

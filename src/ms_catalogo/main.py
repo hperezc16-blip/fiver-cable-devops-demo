@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException
 from pydantic import BaseModel, Field
 import psycopg
 
-from src.common.base import crear_app, get_conn, requiere_rol
+from src.common.base import OPERACION, PERSONAL, crear_app, get_conn, requiere_rol, usuario_actual
 from src.ms_catalogo import logic
 
 ESQUEMA = "red_db"
@@ -30,8 +30,26 @@ def listar_planes():
         return c.execute("SELECT * FROM planes_servicio ORDER BY precio_mensual").fetchall()
 
 
+@app.get("/api/onus")
+def listar_onus(id_cliente: int | None = None, user: dict = Depends(usuario_actual)):
+    if user["rol"] == "Suscriptor":
+        id_cliente = int(user["sub"])
+    elif user["rol"] not in PERSONAL:
+        raise HTTPException(403, "Rol sin permiso para esta operación")
+    sql, params = "SELECT * FROM dispositivos_onu", []
+    if id_cliente is not None:
+        sql += " WHERE id_cliente_ref = %s"
+        params.append(id_cliente)
+    with get_conn(ESQUEMA) as c:
+        filas = c.execute(sql + " ORDER BY id_onu", params).fetchall()
+    for f in filas:
+        potencia = f["potencia_optica_dbm"]
+        f["clasificacion_senal"] = logic.clasificar_senal(None if potencia is None else float(potencia))
+    return filas
+
+
 @app.post("/api/onus", status_code=201)
-def registrar_onu(datos: NuevaOnu, user: dict = Depends(requiere_rol("Tecnico", "Administrador"))):
+def registrar_onu(datos: NuevaOnu, user: dict = Depends(requiere_rol(*OPERACION))):
     try:
         mac = logic.normalizar_mac(datos.mac_address)
     except ValueError as e:
@@ -52,7 +70,7 @@ def registrar_onu(datos: NuevaOnu, user: dict = Depends(requiere_rol("Tecnico", 
 
 
 @app.get("/api/onus/criticas")
-def onus_senal_critica(user: dict = Depends(requiere_rol("Tecnico", "Administrador"))):
+def onus_senal_critica(user: dict = Depends(requiere_rol(*PERSONAL))):
     with get_conn(ESQUEMA) as c:
         filas = c.execute("SELECT * FROM vw_onus_senal_critica ORDER BY potencia_optica_dbm").fetchall()
     for f in filas:
@@ -61,7 +79,7 @@ def onus_senal_critica(user: dict = Depends(requiere_rol("Tecnico", "Administrad
 
 
 @app.post("/api/onus/estado")
-def actualizar_estado_onu(datos: CambioEstadoOnu, user: dict = Depends(requiere_rol("Tecnico", "Administrador"))):
+def actualizar_estado_onu(datos: CambioEstadoOnu, user: dict = Depends(requiere_rol(*OPERACION))):
     if datos.nuevo_estado not in logic.ESTADOS_ONU:
         raise HTTPException(422, "Estado de ONU no válido")
     with get_conn(ESQUEMA) as c:
