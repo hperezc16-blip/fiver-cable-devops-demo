@@ -7,12 +7,14 @@ from __future__ import annotations
 
 import os
 import time
-from contextlib import contextmanager
+from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Iterator
+from typing import Generator
 
 import jwt
 import psycopg
+from psycopg import sql
+from psycopg_pool import ConnectionPool, PoolTimeout
 from psycopg.rows import dict_row
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,6 +22,7 @@ from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 JWT_ALG = "HS256"
+_pool: ConnectionPool | None = None
 
 
 def jwt_secret() -> str:
@@ -40,18 +43,55 @@ def database_url() -> str:
 
 
 @contextmanager
-def get_conn(schema: str) -> Iterator[psycopg.Connection]:
-    """Abre una conexión con el search_path fijado al esquema del servicio."""
-    conn = psycopg.connect(database_url(), row_factory=dict_row, autocommit=False)
+def get_conn(schema: str) -> Generator[psycopg.Connection, None, None]:
+    """Toma una conexión del pool con el esquema limitado a la transacción."""
+    if _pool is None:
+        raise RuntimeError("El pool de base de datos no está iniciado")
+
     try:
-        conn.execute(f"SET search_path TO {schema}")
-        yield conn
-        conn.commit()
+        with _pool.connection(timeout=float(os.getenv("DB_POOL_TIMEOUT_SECONDS", "10"))) as conn:
+            conn.execute(sql.SQL("SET LOCAL search_path TO {}").format(sql.Identifier(schema)))
+            yield conn
+    except PoolTimeout as exc:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "Servicio ocupado; intente nuevamente",
+            headers={"Retry-After": "1"},
+        ) from exc
+
+
+def open_connection_pool() -> None:
+    global _pool
+    if _pool is not None:
+        return
+
+    min_size = int(os.getenv("DB_POOL_MIN_SIZE", "1"))
+    max_size = int(os.getenv("DB_POOL_MAX_SIZE", "5"))
+    timeout = float(os.getenv("DB_POOL_TIMEOUT_SECONDS", "10"))
+    if min_size < 0 or max_size < 1 or min_size > max_size or timeout <= 0:
+        raise ValueError("Configuración inválida del pool de base de datos")
+
+    pool = ConnectionPool(
+        conninfo=database_url(),
+        kwargs={"row_factory": dict_row, "autocommit": False},
+        min_size=min_size,
+        max_size=max_size,
+        timeout=timeout,
+        open=False,
+    )
+    try:
+        pool.open(wait=True)
     except Exception:
-        conn.rollback()
+        pool.close()
         raise
-    finally:
-        conn.close()
+    _pool = pool
+
+
+def close_connection_pool() -> None:
+    global _pool
+    pool, _pool = _pool, None
+    if pool is not None:
+        pool.close()
 
 
 def crear_token(sub: int, rol: str, correo: str, minutos: int = 60) -> str:
@@ -88,10 +128,25 @@ def requiere_rol(*roles: str):
 
 
 def crear_app(nombre: str, esquema: str, version: str = "2.0.0") -> FastAPI:
-    app = FastAPI(title=f"Fiver Cable - {nombre}", version=version)
+    @asynccontextmanager
+    async def lifespan(_application: FastAPI):
+        open_connection_pool()
+        _application.state.database_pool = _pool
+        try:
+            yield
+        finally:
+            close_connection_pool()
+            _application.state.database_pool = None
+
+    app = FastAPI(title=f"Fiver Cable - {nombre}", version=version, lifespan=lifespan)
+    cors_origins = [
+        origin.strip()
+        for origin in os.getenv("CORS_ORIGINS", "").split(",")
+        if origin.strip()
+    ]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
+        allow_origins=cors_origins,
         allow_methods=["*"], allow_headers=["*"],
     )
     arranque = time.time()

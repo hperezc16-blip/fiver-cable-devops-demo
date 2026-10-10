@@ -151,3 +151,75 @@ def test_admin_registra_equipo_unico(navegador):
     aviso = WebDriverWait(d, 5).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "#toast .toast")))
     assert "serie único" in aviso.text
     captura(d, "CP-32_2_serie_repetida_rechazada")
+
+
+@pytest.mark.caso("CP-33", "Jefatura consulta indicadores y supervisa la operación")
+def test_jefatura_consulta_dashboard(navegador):
+    d = navegador
+    ingresar(d, "Jefatura")
+    texto = pantalla(d)
+    assert "Panel de jefatura" in texto
+    assert "CLIENTES ACTIVOS" in texto
+    assert "VISITAS REGISTRADAS" in texto
+    assert "Indicadores ilustrativos" in texto
+    captura(d, "CP-33_dashboard_jefatura")
+    boton(d, "Ver ingresos y egresos")
+    assert "Ingresos y egresos" in pantalla(d)
+
+
+@pytest.mark.caso("CP-34", "Secretaría agenda una visita para cliente y técnico")
+def test_secretaria_agenda_visita(navegador):
+    d = navegador
+    ingresar(d, "Secretaría")
+    assert "Atención de oficina" in pantalla(d)
+    boton(d, "Agendar visita técnica")
+    boton(d, "Programar visita")
+    Select(d.find_element(By.ID, "visitClient")).select_by_visible_text("Carlos Méndez")
+    Select(d.find_element(By.ID, "visitTechnician")).select_by_visible_text("Luis Herrera")
+    d.execute_script("arguments[0].value = '2026-10-10'", d.find_element(By.ID, "visitDate"))
+    d.find_element(By.ID, "visitNote").send_keys("Revisar conexión y confirmar señal.")
+    boton(d, "Guardar en agenda demo")
+    texto = pantalla(d)
+    assert "Visitas programadas · 5" in texto
+    assert "2026-10-10 · Luis Herrera" in texto
+    captura(d, "CP-34_agenda_secretaria")
+
+
+@pytest.mark.caso("CP-35", "Secretaría registra un pago de oficina con autorización")
+def test_secretaria_registra_pago_oficina(navegador):
+    d = navegador
+    ingresar(d, "Secretaría")
+    boton(d, "Registrar pago de oficina")
+    Select(d.find_element(By.ID, "officeMethod")).select_by_visible_text("Tarjeta")
+    boton(d, "Confirmar pago simulado")
+    aviso = WebDriverWait(d, 5).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "#toast .toast"))
+    )
+    assert "autorización" in aviso.text
+    d.find_element(By.ID, "officeAuthorization").send_keys("AUTH-DEMO-2046")
+    boton(d, "Confirmar pago simulado")
+    texto = pantalla(d)
+    assert "Pago de oficina registrado" in texto
+    assert "Patricia Gómez" in texto
+    assert "Q 325.00" in texto
+    assert "no se movió dinero" in texto
+    captura(d, "CP-35_recibo_pago_oficina")
+
+
+@pytest.mark.caso("CP-39", "Administración puede cambiar el estado demo de una cuenta")
+def test_admin_cambia_estado_cuenta_demo(navegador):
+    d = navegador
+    ingresar(d, "Administrador")
+    boton(d, "Usuarios")
+    d.find_element(By.ID, "userList").find_element(
+        By.XPATH, ".//div[contains(@class, 'card')]"
+    ).click()
+    Select(d.find_element(By.ID, "demoUserState")).select_by_visible_text("Suspendido")
+    boton(d, "Aplicar estado (demo)")
+    assert "Suspendido" in pantalla(d)
+    assert "solo en la demostración" in d.find_element(By.ID, "toast").text
+    captura(d, "CP-39_estado_suspendido_demo")
+    d.find_element(By.CSS_SELECTOR, "button.back").click()
+    boton(d, "Inicio")
+    assert "SUSPENDIDOS" in pantalla(d)
+    assert "2" in pantalla(d)

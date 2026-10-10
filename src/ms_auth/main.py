@@ -26,6 +26,11 @@ class Login(BaseModel):
     password: str
 
 
+class CambioPassword(BaseModel):
+    password_actual: str = Field(min_length=1, max_length=128)
+    password_nueva: str = Field(min_length=1, max_length=128)
+
+
 class CambioEstado(BaseModel):
     estado_servicio: str
 
@@ -63,6 +68,31 @@ def login(datos: Login):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Cuenta inactiva")
     return {"access_token": crear_token(u["id_cliente"], u["rol"], u["correo"]),
             "token_type": "bearer", "rol": u["rol"], "id_cliente": u["id_cliente"]}
+
+
+@app.put("/api/auth/cambiar-password")
+def cambiar_password(datos: CambioPassword, user: dict = Depends(usuario_actual)):
+    if not logic.validar_password(datos.password_nueva):
+        raise HTTPException(422, "La contraseña nueva debe tener 8+ caracteres, mayúscula, minúscula y número")
+
+    with get_conn(ESQUEMA) as c:
+        fila = c.execute(
+            "SELECT password_hash FROM clientes WHERE id_cliente = %s",
+            (int(user["sub"]),),
+        ).fetchone()
+        if not fila:
+            raise HTTPException(404, "Cuenta no encontrada")
+        if not logic.verificar_password(datos.password_actual, fila["password_hash"]):
+            raise HTTPException(401, "La contraseña actual es incorrecta")
+        if logic.verificar_password(datos.password_nueva, fila["password_hash"]):
+            raise HTTPException(422, "La contraseña nueva debe ser distinta a la actual")
+
+        c.execute(
+            "UPDATE clientes SET password_hash = %s WHERE id_cliente = %s",
+            (logic.hash_password(datos.password_nueva), int(user["sub"])),
+        )
+
+    return {"mensaje": "Contraseña actualizada"}
 
 
 @app.get("/api/clientes/{id_cliente}")

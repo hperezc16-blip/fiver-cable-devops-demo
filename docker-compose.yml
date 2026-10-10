@@ -28,7 +28,7 @@ services:
   ms_auth:
     build: { context: ., dockerfile: docker/Dockerfile.auth }
     container_name: ms_auth
-    env_file: [.env.example]
+    env_file: [.env]
     environment: { DB_HOST: postgres_db }
     ports: ["3000:3000"]
     depends_on: { postgres_db: { condition: service_healthy } }
@@ -36,7 +36,7 @@ services:
   ms_catalogo:
     build: { context: ., dockerfile: docker/Dockerfile.catalogo }
     container_name: ms_catalogo
-    env_file: [.env.example]
+    env_file: [.env]
     environment: { DB_HOST: postgres_db }
     ports: ["3001:3001"]
     depends_on: { postgres_db: { condition: service_healthy } }
@@ -44,7 +44,7 @@ services:
   ms_pedidos:
     build: { context: ., dockerfile: docker/Dockerfile.pedidos }
     container_name: ms_pedidos
-    env_file: [.env.example]
+    env_file: [.env]
     environment: { DB_HOST: postgres_db }
     ports: ["3002:3002"]
     depends_on: { postgres_db: { condition: service_healthy } }
@@ -52,7 +52,7 @@ services:
   ms_pagos:
     build: { context: ., dockerfile: docker/Dockerfile.pagos }
     container_name: ms_pagos
-    env_file: [.env.example]
+    env_file: [.env]
     environment: { DB_HOST: postgres_db, AUTH_PUBLIC_URL: "http://localhost:3000" }
     ports: ["3003:3003"]
     depends_on: { postgres_db: { condition: service_healthy } }

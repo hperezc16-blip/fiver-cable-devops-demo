@@ -25,6 +25,15 @@ PG_ADMIN="fiveradmin"
 DB_NAME="fivercable_db"
 ACA_ENV="cae-fivercable-staging"
 IMAGE_TAG="${IMAGE_TAG:-latest}"
+MAX_REPLICAS="${ACA_MAX_REPLICAS:-2}"
+POOL_MIN_SIZE="${DB_POOL_MIN_SIZE:-1}"
+POOL_MAX_SIZE="${DB_POOL_MAX_SIZE:-5}"
+POOL_TIMEOUT="${DB_POOL_TIMEOUT_SECONDS:-10}"
+
+if ! [[ "$MAX_REPLICAS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "ACA_MAX_REPLICAS debe ser un entero positivo" >&2
+  exit 1
+fi
 
 echo "==> Registro de proveedores de recursos"
 for ns in Microsoft.App Microsoft.OperationalInsights Microsoft.ContainerRegistry Microsoft.DBforPostgreSQL; do
@@ -91,17 +100,18 @@ az containerapp env show -n "$ACA_ENV" -g "$RG" -o none 2>/dev/null || \
 
 desplegar() {  # $1=servicio $2=puerto $3=variables extra
   local app="ms-$1"
-  local envs="DATABASE_URL=secretref:database-url JWT_SECRET=secretref:jwt-secret PORT=$2 $3"
+  local envs="DATABASE_URL=secretref:database-url JWT_SECRET=secretref:jwt-secret PORT=$2 DB_POOL_MIN_SIZE=$POOL_MIN_SIZE DB_POOL_MAX_SIZE=$POOL_MAX_SIZE DB_POOL_TIMEOUT_SECONDS=$POOL_TIMEOUT $3"
   if az containerapp show -n "$app" -g "$RG" -o none 2>/dev/null; then
     az containerapp secret set -n "$app" -g "$RG" \
       --secrets database-url="$DATABASE_URL" jwt-secret="$JWT_SECRET_STAGING" -o none
     az containerapp update -n "$app" -g "$RG" \
-      --image "$ACR_SERVER/fivercable/ms_$1:$IMAGE_TAG" --set-env-vars $envs -o none
+      --image "$ACR_SERVER/fivercable/ms_$1:$IMAGE_TAG" \
+      --min-replicas 0 --max-replicas "$MAX_REPLICAS" --set-env-vars $envs -o none
   else
     az containerapp create -n "$app" -g "$RG" --environment "$ACA_ENV" \
       --image "$ACR_SERVER/fivercable/ms_$1:$IMAGE_TAG" \
       --registry-server "$ACR_SERVER" --registry-username "$ACR_USER" --registry-password "$ACR_PASS" \
-      --target-port "$2" --ingress external --min-replicas 0 --max-replicas 2 \
+      --target-port "$2" --ingress external --min-replicas 0 --max-replicas "$MAX_REPLICAS" \
       --cpu 0.25 --memory 0.5Gi \
       --secrets database-url="$DATABASE_URL" jwt-secret="$JWT_SECRET_STAGING" \
       --env-vars $envs -o none
@@ -113,6 +123,10 @@ AUTH_FQDN=$(desplegar auth 3000 "")
 CAT_FQDN=$(desplegar catalogo 3001 "")
 PED_FQDN=$(desplegar pedidos 3002 "")
 PAG_FQDN=$(desplegar pagos 3003 "AUTH_PUBLIC_URL=https://${AUTH_FQDN}")
+
+echo "==> Limitar CORS de autenticación al portal de cobro"
+az containerapp update -n ms-auth -g "$RG" \
+  --set-env-vars "CORS_ORIGINS=https://${PAG_FQDN}" -o none
 
 echo "==> Verificación de salud"
 for f in "$AUTH_FQDN" "$CAT_FQDN" "$PED_FQDN" "$PAG_FQDN"; do
