@@ -27,7 +27,7 @@ Datos útiles: el **cliente 7** (María José Ramírez) está *Moroso* con 2 fac
 ## Preparación (10 minutos antes)
 
 1. Abrir **Docker Desktop** y esperar a que diga *Engine running*.
-2. En la terminal de VS Code, dentro de la carpeta del proyecto, reiniciar los datos de demostración:
+2. Dar **doble clic en `iniciar_demo.bat`** (en la carpeta del proyecto). Reinicia los datos de demostración, levanta los servicios y abre el portal. Equivale a ejecutar en la terminal:
    ```powershell
    docker compose down -v
    docker compose up -d --build --wait
