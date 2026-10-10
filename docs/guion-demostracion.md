@@ -1,12 +1,12 @@
 # Guion de demostración de las aplicaciones
 
-Este guion sirve para la demostración en vivo de la exposición. Cubre las tres aplicaciones del proyecto: el portal de cobro, el prototipo web y las APIs. Hay videos de respaldo grabados de la ejecución real en [evidencias/videos](evidencias/videos/).
+Este guion sirve para la demostración en vivo de la exposición. Cubre las tres aplicaciones del proyecto: el portal de cobro, el prototipo web y las APIs.
 
-| Aplicación | Dirección | Qué demuestra | Video de respaldo |
-|---|---|---|---|
-| Portal de cobro en campo (producción local) | `http://localhost:3003/portal` | Proceso automatizado con las APIs y PostgreSQL | [demo-portal-cobro.mp4](evidencias/videos/demo-portal-cobro.mp4) (52 s) |
-| Prototipo web por perfiles | `prototipo/index.html` | Experiencia de cada rol de la empresa | [demo-prototipo-roles.mp4](evidencias/videos/demo-prototipo-roles.mp4) (59 s) |
-| APIs (OpenAPI) | `http://localhost:3000/docs` a `:3003/docs` | Servicios, endpoints y estado | Incluido en el video del portal |
+| Aplicación | Dirección | Qué demuestra |
+|---|---|---|
+| Portal de cobro en campo (producción local) | `http://localhost:3003/portal` | Proceso automatizado con las APIs y PostgreSQL |
+| Prototipo web por perfiles | `prototipo/index.html` | Experiencia de cada rol de la empresa |
+| APIs (OpenAPI) | `http://localhost:3000/docs` a `:3003/docs` | Servicios, endpoints y estado |
 
 ---
 
@@ -26,7 +26,7 @@ Este guion sirve para la demostración en vivo de la exposición. Cubre las tres
    3. `http://localhost:3003/api/facturas?id_cliente=1`
    4. `prototipo/index.html` (doble clic en el archivo)
    5. La presentación
-4. Dejar los dos videos abiertos en otra ventana, por si algo falla.
+4. Tener a mano las capturas de `docs/evidencias/capturas` (diapositiva 7), por si algo falla.
 5. Cerrar el archivo `.env` y cualquier ventana que muestre contraseñas.
 6. Subir el zoom del navegador a 125 % para que se lea desde el fondo del salón.
 
@@ -57,10 +57,10 @@ docker exec fiver_postgres psql -U postgres -d fivercable_db -c "SELECT id_factu
 
 ## Demo 2: Prototipo web por perfiles (1 min, opcional si sobra tiempo)
 
-Abrir `prototipo/index.html`. Si el tiempo es corto, mostrar solo los pasos 1, 3 y 5, o reproducir el video de 59 segundos sin audio mientras se explica.
+Abrir `prototipo/index.html`. Si el tiempo es corto, mostrar solo los pasos 1, 3 y 5.
 
 | # | Perfil | Acción | Qué decir |
-|---|---|---|---|
+|---|---|---|
 | 1 | Cliente | **Cliente** → **Ingresar** → **Facturas** → **Ver detalle** → **Pagar ahora** → **Continuar** → **Confirmar pago** | "El cliente también podrá pagar desde su cuenta." |
 | 2 | Cliente | **Soporte** → falla *Sin señal* → **Enviar reporte** | "Reporta una falla y recibe su número de ticket." |
 | 3 | Técnico | **Técnico** → **Ingresar** → **Iniciar visita** → **Registrar cobro** → **Confirmar cobro** | "La visión móvil del técnico: rutas del día y cobro." |
@@ -76,7 +76,7 @@ Abrir `prototipo/index.html`. Si el tiempo es corto, mostrar solo los pasos 1, 3
 
 | Problema | Qué hacer |
 |---|---|
-| Docker no arranca o el portal no carga | Reproducir `demo-portal-cobro.mp4` y explicar sobre el video |
+| Docker no arranca o el portal no carga | Explicar el flujo con las capturas reales de la diapositiva 7 |
 | No hay facturas pendientes (ya se cobraron en un ensayo) | `docker compose down -v` y `docker compose up -d --wait` (tarda unos 30 s) |
 | "No se pudo conectar con autenticación" | Verificar que `ms_auth` esté en `docker compose ps`; si no, `docker compose up -d ms_auth` |
 | Se acaba el tiempo | Saltar el Demo 2 y pasar a la diapositiva de seguridad |

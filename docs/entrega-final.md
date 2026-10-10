@@ -545,7 +545,6 @@ Cambio de estado a "Borrado"                        -> HTTP 422 {"detail":"Estad
 | [evidencias/capturas-prototipo/](evidencias/capturas-prototipo/) | Capturas automáticas de Selenium del prototipo (CP-29 a CP-39) |
 | [evidencias/reporte-pruebas.html](evidencias/reporte-pruebas.html) | Reporte de Pytest de la ejecución completa |
 | [evidencias/capturar_evidencias.py](evidencias/capturar_evidencias.py) | Script que regenera las capturas del portal |
-| [evidencias/videos/](evidencias/videos/) | Videos de demostración: portal de cobro real y prototipo por perfiles |
 | [guion-demostracion.md](guion-demostracion.md) | Guion paso a paso de la demostración en vivo |
 
 Para regenerar las evidencias:
