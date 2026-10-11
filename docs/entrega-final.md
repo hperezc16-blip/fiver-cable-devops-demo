@@ -93,18 +93,18 @@ Es una plataforma de cuatro microservicios con un **portal web de operaciones** 
 
 ```mermaid
 flowchart LR
-    T[Técnico<br/>navegador] -->|HTTPS + JWT| P[ms_pagos :3003<br/>portal y API]
-    T -->|login| A[ms_auth :3000]
-    S[Suscriptor] -->|JWT| A
-    S -->|sus facturas| P
-    ADM[Administrador] --> A & P & C[ms_catalogo :3001] & D[ms_pedidos :3002]
+    U5[Usuarios: Cliente, Técnico,<br/>Secretaría, Jefatura, Administrador] -->|abre| W[Portal web<br/>celular o computadora]
+    W -->|login| A[ms_auth :3000]
+    W -->|HTTPS + JWT| P[ms_pagos :3003<br/>portal y API]
+    W -->|HTTPS + JWT| C[ms_catalogo :3001]
+    W -->|HTTPS + JWT| D[ms_pedidos :3002]
     subgraph PG[PostgreSQL 16 - fivercable_db]
-      U[(usuarios_db)]
+      UDB[(usuarios_db)]
       B[(billing_db)]
       R[(red_db)]
       SO[(soporte_db)]
     end
-    A --> U
+    A --> UDB
     P --> B
     C --> R
     D --> SO
@@ -220,7 +220,7 @@ Las capturas de `ms_catalogo` y `ms_pedidos` también están en [evidencias/capt
 
 ![OpenAPI de ms_pagos](evidencias/capturas/E02_openapi_ms_pagos.png)
 
-> **Azure (completar si se ejecutó):** si el equipo corrió el pipeline con `desplegarEnAzure = true`, agregar aquí la captura del run exitoso (número de build y fecha), la URL `https://ms-pagos.<…>.azurecontainerapps.io/portal` y `/health` de los cuatro servicios, ocultando el ID de suscripción. Si no se ejecutó, la demostración en clase se presenta como **ambiente Docker de staging** y Azure como despliegue configurado.
+> **Ambiente de la demostración:** las evidencias de este documento corresponden al ambiente de staging en contenedores Docker (sección 4). El despliegue en Azure Container Apps está automatizado en el pipeline (parámetro `desplegarEnAzure`) mediante `infra/azure/deploy-staging.sh`, con secretos generados en cada ejecución.
 
 ---
 
@@ -548,6 +548,7 @@ El uso seguro se explica en el manual (sección 6, "Buenas prácticas"). Los con
 | Sin comprobante inmediato | Recibo único `FC-…` generado con `secrets` | M04 |
 | Conciliación manual | Cierre diario automático por método de pago | `vw_cierre_diario_pagos` |
 | Sin rastro de cambios de servicio | Auditoría automática por trigger | Anexo B |
+| Cliente moroso días después de pagar | Servicio reactivado en el momento por el técnico | M05, S05 |
 
 ### Aporte a la transformación digital
 
@@ -627,13 +628,15 @@ python docs/evidencias/capturar_evidencias.py
 
 | Tiempo | Contenido | Quién | Qué mostrar |
 |---|---|---|---|
-| 0:00–1:00 | Fiver Cable y el proceso de cobro en campo | Integrante 1 | Sección 1 |
-| 1:00–2:00 | El problema: cobro manual, atraso, errores, cobro duplicado | Integrante 1 | Tabla "Antes / Con la solución" |
-| 2:00–3:00 | Solución, arquitectura y tecnologías | Integrante 2 | Diagrama de arquitectura |
-| 3:00–6:00 | **Demostración en vivo:** login de técnico → panel → cobro al cliente 7 (rechazo con tarjeta sin autorización, cobro en efectivo, recibo, reactivar servicio) → panel de jefatura → vista del cliente en celular | Integrante 2 | Portal en `:3003/portal`, ver `guion-demostracion.md` |
-| 6:00–8:00 | Controles de seguridad: API sin token (401), suscriptor (403), monto alterado (422), duplicado (409), auditoría en BD, secretos en el pipeline | Integrante 3 | Anexo A, matriz de roles, límites de confianza |
-| 8:00–9:00 | Pruebas y CI/CD: 62/63, CP-26 y su plan, pipeline Build → Test → Deploy | Integrante 3 | Reporte HTML, `azure-pipelines.yml` |
-| 9:00–10:00 | Resultados, beneficios, pendientes y cierre | Integrante 1 | Secciones 8 y 9 |
+| 0:00–1:50 | Presentación del equipo, Fiver Cable, proceso de cobro en campo y problema identificado | Hazel Perez | Diapositivas 1 a 3 |
+| 1:50–2:30 | Solución tecnológica: arquitectura de microservicios y tecnologías | Byron Morales | Diagrama de arquitectura |
+| 2:30–3:00 | Principales funcionalidades por rol | Byron Morales | Tabla de los 5 roles |
+| 3:00–5:30 | **Demostración en vivo:** login de técnico → cobro al cliente 7 (rechazo con tarjeta sin autorización, cobro en efectivo, recibo, reactivar servicio) → panel de jefatura y auditoría | Byron Morales | Portal en `:3003/portal`, ver `guion-demostracion.md` |
+| 5:30–7:30 | Controles de seguridad: requerimientos, ataques probados (401, 403, 409, 422), datos y DevOps | Luis Reyes | Anexo A, matriz de roles, límites de confianza |
+| 7:30–8:30 | Pruebas (62 de 63), CI/CD y avance del proyecto desde DevOps 1 | Luis Reyes | Reporte HTML, `azure-pipelines.yml`, historial del repositorio |
+| 8:30–10:00 | Resultados, beneficios, conclusiones y preguntas | Hazel Perez | Secciones 8 y 9 |
+
+El líder del grupo coordina la participación y controla el tiempo: avisa al minuto 9 para cerrar dentro de los 10 minutos.
 
 Recomendaciones para la exposición:
 
