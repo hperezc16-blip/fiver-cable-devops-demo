@@ -5,6 +5,7 @@ Este guion sirve para la demostración en vivo y para grabar el video del equipo
 | Aplicación | Dirección | Qué demuestra |
 |---|---|---|
 | Portal web (5 roles) | `http://localhost:3003/portal` | Proceso de cobro automatizado y operación de la empresa |
+| Portal web en Azure (producción) | `https://ms-pagos.mangodune-a6acd05d.canadacentral.azurecontainerapps.io/portal` | La misma aplicación publicada en la nube |
 | APIs (OpenAPI) | `http://localhost:3000/docs` a `:3003/docs` | Servicios, endpoints y estado |
 | Prototipo inicial | `prototipo/index.html` | Diseño original del equipo (datos simulados) |
 
@@ -34,7 +35,7 @@ Datos útiles: el **cliente 7** (María José Ramírez) está *Moroso* con 2 fac
    docker compose ps
    ```
    Los seis contenedores deben aparecer como `healthy` o `Up`.
-3. Abrir `http://localhost:3003/portal` en el navegador.
+3. Abrir `http://localhost:3003/portal` en el navegador. Para mostrar producción, abrir también la URL de Azure un minuto antes: el primer acceso del día tarda entre 10 y 20 segundos porque los servicios se encienden bajo demanda.
 4. Tener a mano las capturas de `docs/evidencias/capturas` por si algo falla.
 5. Cerrar el archivo `.env` y cualquier ventana que muestre contraseñas.
 6. Subir el zoom del navegador a 110–125 % para que se lea desde el fondo del salón.

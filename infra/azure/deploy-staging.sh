@@ -66,16 +66,20 @@ if ! az postgres flexible-server show -n "$PG_SERVER" -g "$RG" -o none 2>/dev/nu
     --admin-user "$PG_ADMIN" --admin-password "$PG_ADMIN_PASSWORD" \
     --tier Burstable --sku-name Standard_B1ms --storage-size 32 --version 16 \
     --public-access 0.0.0.0 --yes -o none
-  az postgres flexible-server db create -g "$RG" -s "$PG_SERVER" -d "$DB_NAME" -o none
 else
   az postgres flexible-server update -g "$RG" -n "$PG_SERVER" --admin-password "$PG_ADMIN_PASSWORD" -o none
+fi
+# La base se crea aparte para que el script sea idempotente si falló a mitad
+# (Azure CLI reciente usa --name para la base de datos)
+if ! az postgres flexible-server db show -g "$RG" -s "$PG_SERVER" --name "$DB_NAME" -o none 2>/dev/null; then
+  az postgres flexible-server db create -g "$RG" -s "$PG_SERVER" --name "$DB_NAME" -o none
 fi
 PG_HOST=$(az postgres flexible-server show -n "$PG_SERVER" -g "$RG" --query fullyQualifiedDomainName -o tsv)
 
 # Permitir al agente del pipeline ejecutar el script SQL y los smoke tests
 AGENT_IP=$(curl -s https://api.ipify.org)
-az postgres flexible-server firewall-rule create -g "$RG" -n "$PG_SERVER" \
-  --rule-name agente-pipeline --start-ip-address "$AGENT_IP" --end-ip-address "$AGENT_IP" -o none
+az postgres flexible-server firewall-rule create -g "$RG" -s "$PG_SERVER" \
+  --name agente-pipeline --start-ip-address "$AGENT_IP" --end-ip-address "$AGENT_IP" -o none
 
 DATABASE_URL="postgresql://${PG_ADMIN}:${PG_ADMIN_PASSWORD}@${PG_HOST}:5432/${DB_NAME}?sslmode=require"
 

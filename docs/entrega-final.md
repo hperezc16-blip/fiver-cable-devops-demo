@@ -167,7 +167,71 @@ docs/evidencias/      capturas, reporte de pruebas y script que las genera
 
 ## 4. Puesta en producción
 
-### Entorno utilizado
+### Producción en Azure
+
+La aplicación está desplegada en **Microsoft Azure** (suscripción Azure for Students, región Canadá Central) con el script automatizado `infra/azure/deploy-staging.sh`, el mismo que ejecuta la etapa Deploy del pipeline. El despliegue crea el registro de imágenes, la base de datos administrada, el entorno de contenedores y los cuatro microservicios, carga el esquema y los datos de demostración y verifica `/health` de cada servicio.
+
+**URL pública del portal:** `https://ms-pagos.mangodune-a6acd05d.canadacentral.azurecontainerapps.io/portal`
+
+Recursos creados en el grupo `rg-fivercable-canada` (salida de `az resource list`):
+
+```
+Recurso                           Tipo                                       Region
+--------------------------------  -----------------------------------------  -------------
+acrfivercableumgcc                Microsoft.ContainerRegistry/registries     canadacentral
+pg-fivercable-umgcc               Microsoft.DBforPostgreSQL/flexibleServers  canadacentral
+workspace-rgfivercablecanadavOWB  Microsoft.OperationalInsights/workspaces   canadacentral
+cae-fivercable-staging            Microsoft.App/managedEnvironments          canadacentral
+ms-auth                           Microsoft.App/containerApps                canadacentral
+ms-catalogo                       Microsoft.App/containerApps                canadacentral
+ms-pedidos                        Microsoft.App/containerApps                canadacentral
+ms-pagos                          Microsoft.App/containerApps                canadacentral
+```
+
+Microservicios en ejecución y base de datos administrada (salida de `az containerapp list` y `az postgres flexible-server show`):
+
+```
+App          Estado    ReplicasMax    Imagen
+-----------  --------  -------------  ------------------------------------------------------------
+ms-auth      Running   2              acrfivercableumgcc.azurecr.io/fivercable/ms_auth:entrega
+ms-catalogo  Running   2              acrfivercableumgcc.azurecr.io/fivercable/ms_catalogo:entrega
+ms-pedidos   Running   2              acrfivercableumgcc.azurecr.io/fivercable/ms_pedidos:entrega
+ms-pagos     Running   2              acrfivercableumgcc.azurecr.io/fivercable/ms_pagos:entrega
+
+Servidor             Version    Estado    SKU            Respaldo_dias    SSL
+-------------------  ---------  --------  -------------  ---------------  ---------
+pg-fivercable-umgcc  16         Ready     Standard_B1ms  7                requerido
+```
+
+Verificación del despliegue (10/10/2026):
+
+| Comprobación | Resultado |
+|---|---|
+| `/health` de ms-auth, ms-catalogo, ms-pedidos y ms-pagos | `"estado":"OK"` y `"db":true` en los cuatro |
+| Inicio de sesión de los 5 roles en Azure | 200, con el rol correcto |
+| API sin token | 401 |
+| CORS de autenticación | Solo permite el origen del portal (`https://ms-pagos…azurecontainerapps.io`) |
+| Cobro en campo en Azure | Recibo `FC-20261011021547-C0FE21A1`, factura FEL-A-1002 en estado Pagado |
+
+Controles de seguridad propios del ambiente en la nube:
+
+- **HTTPS** en todas las URL públicas (certificado administrado por Azure Container Apps).
+- **Secretos**: la contraseña de PostgreSQL y la clave JWT se generan aleatoriamente en cada despliegue y se guardan como *secrets* de Container Apps (`secretref:`); no están en el repositorio ni en el registro del pipeline (se enmascaran con `task.setsecret`).
+- **Base de datos** con SSL obligatorio (`sslmode=require`), firewall que solo admite servicios de Azure y la IP que ejecuta el despliegue, y respaldos automáticos de 7 días.
+- **Contenedores** sin privilegios de administrador y con un máximo de 2 réplicas por servicio.
+
+![Servicio de pagos en Azure respondiendo /health](evidencias/capturas/AZ01_health_ms_pagos_azure.png)
+
+![Portal web publicado en Azure (URL pública en la barra de direcciones)](evidencias/capturas/AZ02_portal_azure_login.png)
+
+![Panel del técnico en Azure, con datos de la base PostgreSQL administrada](evidencias/capturas/AZ03_portal_azure_panel.png)
+
+![Cobro registrado en producción con su recibo](evidencias/capturas/AZ04_portal_azure_cobro_recibo.png)
+
+> El servicio escala a cero réplicas cuando no hay uso para ahorrar crédito, por lo que la primera solicitud del día puede tardar entre 10 y 20 segundos en responder.
+
+### Ambiente local de staging
+
 
 La aplicación se ejecuta en contenedores con Docker Compose: PostgreSQL 16, Redis y los cuatro microservicios, cada uno con su healthcheck. Para la demostración se usó Docker Desktop 29.4 sobre Windows 11.
 
@@ -210,7 +274,7 @@ flowchart LR
 - En `azure-pipelines.yml`, cada push o PR a `develop`/`main` ejecuta las etapas Build y Test. Solo `main` llega a Deploy Staging, que se ejecuta en el Environment `fivercable-staging`.
 - `infra/azure/deploy-staging.sh` es idempotente. Crea el grupo de recursos, ACR, PostgreSQL Flexible Server y Container Apps, carga el esquema, publica las imágenes y verifica `/health` de los cuatro servicios. La contraseña de PostgreSQL y el secreto JWT se generan en cada despliegue y se guardan como *secrets* de Container Apps (`secretref:`), no en el repositorio.
 
-### Evidencias de funcionamiento
+### Evidencias de funcionamiento (ambiente local)
 
 | `/health` ms_auth | `/health` ms_pagos |
 |---|---|
@@ -219,8 +283,6 @@ flowchart LR
 Las capturas de `ms_catalogo` y `ms_pedidos` también están en [evidencias/capturas](evidencias/capturas/). Las cuatro respuestas muestran `"estado":"OK","db":true`.
 
 ![OpenAPI de ms_pagos](evidencias/capturas/E02_openapi_ms_pagos.png)
-
-> **Ambiente de la demostración:** las evidencias de este documento corresponden al ambiente de staging en contenedores Docker (sección 4). El despliegue en Azure Container Apps está automatizado en el pipeline (parámetro `desplegarEnAzure`) mediante `infra/azure/deploy-staging.sh`, con secretos generados en cada ejecución.
 
 ---
 
@@ -474,7 +536,7 @@ flowchart TB
 | Separación | Un esquema por microservicio. `get_conn` fija `SET LOCAL search_path` solo al esquema del servicio. | `src/common/base.py` |
 | Credenciales | Se leen de variables de entorno o de *secrets*. `.env` está en `.gitignore`. En Azure, la contraseña de PostgreSQL es aleatoria en cada despliegue. | `.gitignore`, `deploy-staging.sh` |
 | Mínimo privilegio | **Pendiente:** los cuatro servicios se conectan con el mismo usuario administrador. Plan: un rol de PostgreSQL por esquema con `GRANT` limitado. | Hallazgo H2 |
-| Respaldos | **Pendiente en local.** Azure PostgreSQL Flexible Server incluye respaldos automáticos (7 días por defecto). Falta documentar una prueba de restauración. | Hallazgo H7 |
+| Respaldos | En Azure, PostgreSQL Flexible Server tiene respaldos automáticos con retención de 7 días (verificado con `az postgres flexible-server show`, sección 4). En local no hay respaldo programado. Falta documentar una prueba de restauración. | Hallazgo H7 |
 
 ### 7.4 DevOps: accesos, repositorio, secretos, dependencias y CI/CD
 
@@ -564,7 +626,7 @@ El uso seguro se explica en el manual (sección 6, "Buenas prácticas"). Los con
 
 ### Conclusiones
 
-1. El cobro en campo quedó automatizado de punta a punta dentro del sistema: autenticación, consulta, validación, registro, recibo y reactivación del servicio. Alrededor de ese proceso, la aplicación web cubre la operación de los 5 roles de la empresa (cliente, técnico, secretaría, jefatura y administración) y funciona en celular y computadora sobre contenedores con los cuatro servicios sanos.
+1. El cobro en campo quedó automatizado de punta a punta dentro del sistema: autenticación, consulta, validación, registro, recibo y reactivación del servicio. Alrededor de ese proceso, la aplicación web cubre la operación de los 5 roles de la empresa (cliente, técnico, secretaría, jefatura y administración) y funciona en celular y computadora. Está publicada en Azure (Container Apps y PostgreSQL administrado) con HTTPS, y también corre en el ambiente local de staging con los mismos contenedores.
 2. La seguridad se incorporó en todas las capas: API (JWT, roles, validación), base de datos (restricciones, triggers, consultas parametrizadas), contenedores (usuario sin privilegios) y pipeline (secretos, pruebas automáticas). Además se comprobó con 62 pruebas aprobadas, con ataques de prueba documentados y con permisos verificados para los 5 roles.
 3. La prueba de carga concurrente (CP-26) no cumplió la meta de p95, aunque no hubo errores. Antes de producción hay que ajustar `DB_POOL_MAX_SIZE` y las réplicas y repetir la prueba en el ambiente de Azure.
 4. Quedan pendientes, documentados en 7.7: secreto JWT obligatorio, mínimo privilegio en la base de datos, límite de intentos de login, respaldo probado y escaneo de dependencias. Además, la reconexión física de la ONU y la integración con SAT y con la pasarela bancaria siguen como trabajo futuro: hoy el trigger marca la factura como pagada, pero no actúa sobre la OLT.
