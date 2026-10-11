@@ -474,7 +474,7 @@ flowchart TB
 | Separación | Un esquema por microservicio. `get_conn` fija `SET LOCAL search_path` solo al esquema del servicio. | `src/common/base.py` |
 | Credenciales | Se leen de variables de entorno o de *secrets*. `.env` está en `.gitignore`. En Azure, la contraseña de PostgreSQL es aleatoria en cada despliegue. | `.gitignore`, `deploy-staging.sh` |
 | Mínimo privilegio | **Pendiente:** los cuatro servicios se conectan con el mismo usuario administrador. Plan: un rol de PostgreSQL por esquema con `GRANT` limitado. | Hallazgo H2 |
-| Respaldos | **Pendiente en local.** Azure PostgreSQL Flexible Server incluye respaldos automáticos (7 días por defecto). Falta documentar una prueba de restauración. | Hallazgo H4 |
+| Respaldos | **Pendiente en local.** Azure PostgreSQL Flexible Server incluye respaldos automáticos (7 días por defecto). Falta documentar una prueba de restauración. | Hallazgo H7 |
 
 ### 7.4 DevOps: accesos, repositorio, secretos, dependencias y CI/CD
 
@@ -530,9 +530,10 @@ El uso seguro se explica en el manual (sección 6, "Buenas prácticas"). Los con
 | H1 | `jwt_secret()` tiene un valor por defecto de desarrollo si falta `JWT_SECRET` | Alto si se despliega sin la variable | Hacer que el servicio no arranque si falta (en Azure ya se inyecta un secreto aleatorio) |
 | H2 | Un único usuario de base de datos con privilegios de administrador para los cuatro servicios | Medio | Un rol de PostgreSQL por esquema con `GRANT` mínimos |
 | H3 | No hay límite de intentos de login ni revocación de JWT tras cambiar la contraseña | Medio | Rate limiting y una lista de revocación o `token_version` |
-| H4 | ~~La auditoría registraba el usuario de base de datos (`postgres`)~~ **Corregido:** la API envía el usuario con `set_config('app.usuario', …)` y el trigger lo registra (CP-43). Sigue pendiente probar la restauración de respaldos. | Bajo | Probar el *restore* |
+| H4 | ~~La auditoría registraba el usuario de base de datos (`postgres`)~~ **Corregido:** la API envía el usuario con `set_config('app.usuario', …)` y el trigger lo registra (CP-43). | — | Resuelto |
 | H5 | El pipeline no escanea vulnerabilidades. El ACR usa usuario administrador. Los cuatro servicios tienen ingreso externo. | Medio | Agregar `pip-audit` y Trivy, usar identidad administrada y dejar solo ms_pagos y ms_auth con ingreso público |
-| H6 | Los valores de demostración de `.env.example` (`admin123`) | Bajo (solo local) | Reemplazarlos al crear `.env` en cualquier ambiente compartido |
+| H6 | El archivo `.env.example` trae valores de demostración | Bajo (solo local) | Reemplazarlos al crear `.env` en cualquier ambiente compartido |
+| H7 | No hay una prueba documentada de restauración de respaldos (Azure PostgreSQL Flexible Server los genera automáticamente; el ambiente local no tiene respaldo programado) | Medio | Programar `pg_dump` diario y documentar una prueba de restauración |
 
 ---
 
